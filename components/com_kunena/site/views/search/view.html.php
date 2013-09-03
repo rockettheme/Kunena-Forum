@@ -128,7 +128,7 @@ class KunenaViewSearch extends KunenaView {
 	}
 	function displaySortByList($id, $attributes = '') {
 		$options	= array();
-		$options[]  = JHtml::_('select.option',	 'score', JText::_('Score, Date') );
+		$options[]  = JHtml::_('select.option',	 '', JText::_('Score, Date') );
 		$options[]	= JHtml::_('select.option',  'lastpost', JText::_('COM_KUNENA_SEARCH_SORTBY_POST') );
 		$options[]	= JHtml::_('select.option',  'title', JText::_('COM_KUNENA_SEARCH_SORTBY_TITLE') );
 //		$options[]	= JHtml::_('select.option',  'replycount', JText::_('COM_KUNENA_SEARCH_SORTBY_POSTS') );

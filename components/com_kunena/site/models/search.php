@@ -25,6 +25,7 @@ class KunenaModelSearch extends KunenaModel {
 	protected $error = null;
 	protected $total = false;
 	protected $messages = false;
+	protected $filters = false;
 
 	protected function populateState() {
 		// Get search word list
@@ -52,13 +53,13 @@ class KunenaModelSearch extends KunenaModel {
 		$value = JRequest::getInt ( 'replylimit', 0 );
 		$this->setState ( 'query.replylimit', $value );
 
-		$value = JRequest::getString ( 'searchdate', 365 );
+		$value = JRequest::getString ( 'searchdate', 0 );
 		$this->setState ( 'query.searchdate', $value );
 
 		$value = JRequest::getWord ( 'beforeafter', 'after' );
 		$this->setState ( 'query.beforeafter', $value );
 
-		$value = JRequest::getWord ( 'sortby', 'lastpost' );
+		$value = JRequest::getWord ( 'sortby', 0 );
 		$this->setState ( 'query.sortby', $value );
 
 		$value = JRequest::getWord ( 'order', 'dec' );
@@ -112,27 +113,41 @@ class KunenaModelSearch extends KunenaModel {
         $page = $this->getState('list.page');
         $from = ($page-1) * $limit;
 
+        $this->filters = new Elastica\Filter\BoolAnd();
+
         $q = $this->sanitizeQuery($this->getState('searchwords'));
 
         // Keyword searching
         if ($q) {
 	        $query = new Elastica\Query\MultiMatch();
 	        $query->setQuery($q);
-	        if ($this->getState('query.searchtype')) {
-	        	if (is_integer($q)) {
-	        		$query->setFields(array('subject','message', 'msgid'));
-	        	} else {
+
+	        xdebug_break();
+
+	        $searchtype = $this->getState('query.searchtype');
+
+	        switch ($searchtype) {
+	        	case 1:		// Titles only
+	        		$query->setFields(array('subject'));
+	        		break;
+	        	case 2:		// Messages only
+	        		$query->setFields(array('message'));
+	        		break;  
+	        	case 3:		// First topic only
+	        		$topicFilter = new Elastica\Filter\Term();
+        			$topicFilter->setTerm('parent',0);
+        			$this->filters->addFilter($topicFilter);
+        			$query->setFields(array('subject','message'));
+	        		break;
+	        	default:	// Title + Message
 	        		$query->setFields(array('subject','message'));	
-	        	}
-	        	
-	        } else {
-	        	$query->setFields(array('subject'));
+	        		break;
 	        }
         } else {
         	$query = new Elastica\Query\MatchAll();
         }
 
-        // Topic filtering
+        // Add filtering
 
         // put it all together
         $queryObj = new Elastica\Query($query);
@@ -246,7 +261,6 @@ class KunenaModelSearch extends KunenaModel {
 		        	'catid' => array('order' => $ordering )
 		        );
 		        break;
-			case 'score' :
 			default :
 				$sortorder = array(
 		        	'_score' => array('order' => $ordering ),
@@ -313,18 +327,16 @@ class KunenaModelSearch extends KunenaModel {
         
 
         // Put all the filters together
-        $filters = new Elastica\Filter\BoolAnd();
-        $filters->addFilter($publishedFilter);
-        $filters->addFilter($accessFilter);
+        $this->filters->addFilter($publishedFilter);
+        $this->filters->addFilter($accessFilter);
         if ($dateQuery) {
-        	$filters->addFilter($dateFilter);	
+        	$this->filters->addFilter($dateFilter);	
         }
         if ($username) {
-        	$filters->addFilter($userFilter);	
+        	$this->filters->addFilter($userFilter);	
         }
-    
-        return $filters;
 
+        return $this->filters;
 	}
 
 
@@ -466,7 +478,7 @@ class KunenaModelSearch extends KunenaModel {
 	public function getUrlParams() {
 		// Turn internal state into URL, but ignore default values
 		$defaults = array ('searchtype' => 0, 'searchuser' => '', 'exactname' => 0, 'childforums' => 0, 'starteronly' => 0,
-			'replyless' => 0, 'replylimit' => 0, 'searchdate' => '365', 'beforeafter' => 'after', 'sortby' => 'lastpost',
+			'replyless' => 0, 'replylimit' => 0, 'searchdate' => '', 'beforeafter' => 'after', 'sortby' => '',
 			'order' => 'dec', 'catids' => '0', 'show' => '0', 'topic_id' => 0 );
 
 		$url_params = '';
