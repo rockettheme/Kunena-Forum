@@ -6,3 +6,7 @@
 build/tmp
 components/com_kunena/site/template/**/params.ini
 components/com_kunena/site/template/crypsis/css/kunena.css
+
+components/com_kunena/site/template/rockettheme_base
+
+components/com_kunena/site/template/rtv3
