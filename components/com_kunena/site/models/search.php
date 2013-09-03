@@ -34,8 +34,8 @@ class KunenaModelSearch extends KunenaModel {
 		}
 		$this->setState ( 'searchwords', $value );
 
-		$value = JRequest::getInt ( 'titleonly', 0 );
-		$this->setState ( 'query.titleonly', $value );
+		$value = JRequest::getInt ( 'searchtype', 0 );
+		$this->setState ( 'query.searchtype', $value );
 
 		$value = JRequest::getString ( 'searchuser', '' );
 		$this->setState ( 'query.searchuser', $value );
@@ -118,7 +118,7 @@ class KunenaModelSearch extends KunenaModel {
         if ($q) {
 	        $query = new Elastica\Query\MultiMatch();
 	        $query->setQuery($q);
-	        if (!$this->getState('query.titleonly')) {
+	        if ($this->getState('query.searchtype')) {
 	        	if (is_integer($q)) {
 	        		$query->setFields(array('subject','message', 'msgid'));
 	        	} else {
@@ -236,6 +236,11 @@ class KunenaModelSearch extends KunenaModel {
 		        	'hits' => array('order' => $ordering )
 		        );
 				break;
+			case 'postusername' :
+				$sortorder = array(
+		        	'name' => array('order' => $ordering )
+		        );
+				break;
 			case 'forum' :
 				$sortorder = array(
 		        	'catid' => array('order' => $ordering )
@@ -253,8 +258,6 @@ class KunenaModelSearch extends KunenaModel {
 	}
 
 	protected function getFilters() {
-
-		xdebug_break();
 
 		// Categories filter
 		$allowedCategories = KunenaAccess::getInstance()->getAllowedCategories();
@@ -462,7 +465,7 @@ class KunenaModelSearch extends KunenaModel {
 
 	public function getUrlParams() {
 		// Turn internal state into URL, but ignore default values
-		$defaults = array ('titleonly' => 0, 'searchuser' => '', 'exactname' => 0, 'childforums' => 0, 'starteronly' => 0,
+		$defaults = array ('searchtype' => 0, 'searchuser' => '', 'exactname' => 0, 'childforums' => 0, 'starteronly' => 0,
 			'replyless' => 0, 'replylimit' => 0, 'searchdate' => '365', 'beforeafter' => 'after', 'sortby' => 'lastpost',
 			'order' => 'dec', 'catids' => '0', 'show' => '0', 'topic_id' => 0 );
 

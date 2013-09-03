@@ -101,9 +101,11 @@ class KunenaViewSearch extends KunenaView {
 
 	function displayModeList($id, $attributes = '') {
 		$options	= array();
-		$options[]	= JHtml::_('select.option',  '0', JText::_('COM_KUNENA_SEARCH_SEARCH_POSTS') );
+		$options[]	= JHtml::_('select.option',  '0', 'Search title and message content' );
 		$options[]	= JHtml::_('select.option',  '1', JText::_('COM_KUNENA_SEARCH_SEARCH_TITLES') );
-		echo JHtml::_('select.genericlist',  $options, 'titleonly', $attributes, 'value', 'text', $this->state->get('query.titleonly'), $id );
+		$options[]	= JHtml::_('select.option',  '2', 'Search messages only' );
+		$options[]	= JHtml::_('select.option',  '3', 'Search first post of topics only' );
+		echo JHtml::_('select.genericlist',  $options, 'searchtype', $attributes, 'value', 'text', $this->state->get('query.searchtype'), $id );
 	}
 	function displayDateList($id, $attributes = '') {
 		$options	= array();
@@ -133,8 +135,7 @@ class KunenaViewSearch extends KunenaView {
 //		$options[]	= JHtml::_('select.option',  'replycount', JText::_('COM_KUNENA_SEARCH_SORTBY_POSTS') );
 		$options[]	= JHtml::_('select.option',  'views', JText::_('COM_KUNENA_SEARCH_SORTBY_VIEWS') );
 //		$options[]	= JHtml::_('select.option',  'threadstart', JText::_('COM_KUNENA_SEARCH_SORTBY_START') );
-		
-//		$options[]	= JHtml::_('select.option',  'postusername', JText::_('COM_KUNENA_SEARCH_SORTBY_USER') );
+		$options[]	= JHtml::_('select.option',  'postusername', JText::_('COM_KUNENA_SEARCH_SORTBY_USER') );
 		$options[]	= JHtml::_('select.option',  'forum', JText::_('COM_KUNENA_CATEGORY') );
 		echo JHtml::_('select.genericlist',  $options, 'sortby', $attributes, 'value', 'text', $this->state->get('query.sortby'), $id );
 	}
