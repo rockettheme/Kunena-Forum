@@ -65,8 +65,7 @@ class KunenaViewSearch extends KunenaView {
 			$this->topicTime = $this->topic->first_post_time;
 
 			$contents = $this->loadTemplateFile('row');
-			
-			// TODO: What does this do? Is it needed?
+
 			$contents = preg_replace_callback('|\[K=(\w+)(?:\:([\w-_]+))?\]|', array($this, 'fillTopicInfo'), $contents);
 
 			echo $contents;

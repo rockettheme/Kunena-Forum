@@ -260,7 +260,7 @@ class KunenaModelSearch extends KunenaModel {
 	protected function getFilters() {
 
 		// Categories filter
-		$allowedCategories = KunenaAccess::getInstance()->getAllowedCategories();
+		$allowedCategories = KunenaUserHelper::getMyself()->getAllowedCategories();
 		$categories = $this->getState('query.catids');
 		$childforums = $this->getState('query.childforums');
 		if (is_array($categories) && in_array(0, $categories)) {
