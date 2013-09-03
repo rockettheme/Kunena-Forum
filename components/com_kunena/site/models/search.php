@@ -122,8 +122,6 @@ class KunenaModelSearch extends KunenaModel {
 	        $query = new Elastica\Query\MultiMatch();
 	        $query->setQuery($q);
 
-	        xdebug_break();
-
 	        $searchtype = $this->getState('query.searchtype');
 
 	        switch ($searchtype) {
@@ -169,19 +167,19 @@ class KunenaModelSearch extends KunenaModel {
                 )
             ),
         ));
-        // $queryObj->setParam('suggest', array(
-        //     'text' => $q,
-        //     "simple_phrase" => array(
-        //         "phrase" => array(
-        //             "field" => "_all",
-        //             "size" => 1,
-        //             "real_word_error_likelihood" => 0.95,
-        //             "confidence" => 2.0,
-        //             "max_errors" => 0.5,
-        //             "gram_size" => 2
-        //         )
-        //     )
-        // ));
+        $queryObj->setParam('suggest', array(
+            'text' => $q,
+            "simple_phrase" => array(
+                "phrase" => array(
+                    "field" => "subject",
+                    "size" => 5,
+                    "real_word_error_likelihood" => 0.95,
+                    "confidence" => 2.0,
+                    "max_errors" => 0.5,
+                    "gram_size" => 3
+                )
+            )
+        ));
 
         $search->addIndex('kunena');
         $resultSet = $search->search($queryObj);
@@ -216,6 +214,7 @@ class KunenaModelSearch extends KunenaModel {
         $data->pages = intval(ceil($data->hits / $limit));
         $data->from = $from;
         $data->size = $limit;
+        $data->query = $q;
         $data->count = $resultSet->count();
         $data->time = 0.001 * $resultSet->getTotalTime();
         //$data->suggestions = $this->getSuggestions($resultSet);

@@ -45,6 +45,9 @@ class KunenaViewSearch extends KunenaView {
 			$highlights = $result->getHighlights();
 
             $this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
+            if ($this->message->getParent()->id) {
+            	$this->subjectHtml = 'RE: '.$this->subjectHtml;
+            }
             if (isset($highlights['message'])) {
                 $this->messageHtml = implode('... ', $highlights['message']);
             } else {
@@ -53,6 +56,7 @@ class KunenaViewSearch extends KunenaView {
 
             $this->score = sprintf("%.1f", $result->getScore() * 10);
 
+            $this->parent = $this->message->getParent()->id;
 			$this->topic = $this->message->getTopic();
 			$this->category = $this->message->getCategory();
 			$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
@@ -89,6 +93,37 @@ class KunenaViewSearch extends KunenaView {
 		}
 	}
 
+	function getSuggestions($suggestion = 'simple_phrase') {
+
+        if (isset($this->data)) {
+        	$results = $this->data->results;
+        	$response = $results->getResponse();
+            $datas = $response->getData();
+            if (isset($datas['suggest'][$suggestion][0]['options'])) {
+                $suggest_data = $datas['suggest'][$suggestion][0]['options'];
+
+				$suggestions = array();
+				foreach ($suggest_data as $suggestion) {
+					$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
+				}
+				return $suggestions;	
+			}
+        }
+
+        return false;
+    }
+
+    function getSuggestUrl($suggestion) {
+
+    	$uri = JFactory::getURI();
+	    $query_string = $uri->getQuery();
+
+	    // remove the page element of the query if it is set
+	    parse_str($query_string,$query_array);
+	    $query_array['q'] = $suggestion;
+
+    	return ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
+    }
 
 	function displaySearchResults() {
 		if(isset($this->data)) {
