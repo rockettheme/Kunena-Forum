@@ -281,6 +281,13 @@ HTML;
 	/**
 	 * Wrapper to addScript
 	 */
+	function addScriptDeclaration($content, $type = 'text/javascript') {
+		return JFactory::getDocument()->addScriptDeclaration($content, $type);
+	}
+
+	/**
+	 * Wrapper to addScript
+	 */
 	function addScript($filename) {
 		$filemin_path = preg_replace ( '/\.js$/u', '-min.js', $filename );
 		if (!JDEBUG && !KunenaFactory::getConfig ()->debug && !KunenaForum::isDev () && JFile::exists(JPATH_ROOT."/media/kunena/$filemin_path")) {
@@ -467,6 +474,27 @@ HTML;
 			JFile::write( $cacheFile, $cache );
 			JFile::write( $outputFile, $newCache['compiled'] );
 		}
+	}
+
+	/**
+	 * Legacy template support.
+	 *
+	 * @param $search
+	 * @return array
+	 * @deprecated 3.1
+	 */
+	public function mapLegacyView($search) {
+		static $map;
+
+		if (!isset($map)) {
+			$file = JPATH_SITE .'/'. $this->getFile('mapping.php');
+			if (is_file($file)) {
+				include $file;
+			}
+		}
+		$search = rtrim($search, '_');
+		if (isset($map[$search])) return $map[$search];
+		return array($search, 'default');
 	}
 
 	/**
