@@ -1,0 +1,77 @@
+<?php
+/**
+ * Kunena Component
+ * @package Kunena.Template.Crypsis
+ * @subpackage Topics
+ *
+ * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
+ * @link http://www.kunena.org
+ **/
+defined('_JEXEC') or die();
+
+/** @var KunenaLayout $this */
+/** @var KunenaForumTopic $this->topic */
+/** @var bool $this->checkbox */
+
+/** @var KunenaForumTopic $topic */
+$topic = $this->topic;
+$author = $topic->getLastPostAuthor();
+
+$cols = empty($this->checkbox) ? 4 : 5;
+if ($this->spacing) : ?>
+<tr>
+	<td class="kcontenttablespacer" colspan="<?php echo $cols; ?>">&nbsp;</td>
+</tr>
+<?php endif; ?>
+<tr class="<?php echo $topic->ordering ? 'warning' : ''; ?>">
+	<td class="span1 center">
+		<?php echo $this->getTopicLink($topic, 'unread', $topic->getIcon()) ?>
+	</td>
+	<td class="span7">
+		<h4>
+			<?php echo $this->getTopicLink($topic); ?>
+			<small class="hidden-phone">
+				(<?php echo $this->formatLargeNumber(max(0, $topic->getTotal()-1)).' '. JText::_('COM_KUNENA_GEN_REPLIES'); ?>)
+			</small>
+		</h4>
+		<ul class="inline hidden-phone">
+			<li>
+				<i class="icon-user"></i>
+				Started by <?php echo $topic->getFirstPostAuthor()->getLink(); ?>
+			</li>
+			<li title="<?php echo KunenaDate::getInstance($topic->first_post_time)->toKunena('config_post_dateformat_hover'); ?>">
+				<i class="icon-calendar"></i>
+				<?php echo KunenaDate::getInstance($topic->first_post_time)->toKunena('config_post_dateformat'); ?>
+			</li>
+		</ul>
+	</td>
+	<td class="span1 center hidden-phone">
+			<?php echo $author->getLink($author->getAvatarImage('img-polaroid', 48)) ?>
+	</td>
+	<td class="span3 hidden-phone">
+		<div>
+			<?php echo $this->getTopicLink($topic, 'last', JText::_('COM_KUNENA_GEN_LAST_POST')); ?>
+		</div>
+		<div>
+			<?php echo $author->getLink(); ?>
+		</div>
+		<div>
+			<span class="ktopic-date hasTooltip" title="<?php echo KunenaDate::getInstance($topic->last_post_time)->toKunena('config_post_dateformat_hover'); ?>">
+				<?php echo KunenaDate::getInstance($topic->last_post_time)->toKunena('config_post_dateformat'); ?>
+			</span>
+		</div>
+	</td>
+	<?php if (!empty($this->checkbox)) : ?>
+	<td class="span1">
+		<input class ="kcheck" type="checkbox" name="topics[<?php echo $topic->id?>]" value="1" />
+	</td>
+	<?php endif; ?>
+	<?php
+	if (!empty($this->position))
+		echo $this->subLayout('Page/Module')
+			->set('position', $this->position)
+			->set('cols', $cols)
+			->setLayout('table_row');
+	?>
+</tr>

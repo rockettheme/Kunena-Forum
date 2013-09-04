@@ -31,7 +31,7 @@ class KunenaViewSearch extends KunenaView {
 
 		$this->_prepareDocument();
 
-		$this->display();
+		$this->render('Search', $tpl);
 	}
 
 	function displayRows() {
@@ -83,13 +83,12 @@ class KunenaViewSearch extends KunenaView {
 		    $query_string = $uri->getQuery();
 
 		    // remove the page element of the query if it is set
-		    parse_str($query_string,$query_array);
+		    parse_str($query_string, $query_array);
 		    unset($query_array['page']);
 
 		    $this->pageurl = ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
 
 			echo $this->loadTemplateFile('pagination');	
-
 		}
 	}
 
@@ -209,7 +208,6 @@ class KunenaViewSearch extends KunenaView {
 				return $date->toSpan('config_post_dateformat', 'config_post_dateformat_hover');
 		}
 	}
-
 
 	protected function _prepareDocument(){
 		$this->setTitle(JText::_('COM_KUNENA_SEARCH_ADVSEARCH'));

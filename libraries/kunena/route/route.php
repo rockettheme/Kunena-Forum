@@ -154,11 +154,11 @@ abstract class KunenaRoute {
 		KUNENA_PROFILER ? KunenaProfiler::instance()->start('function '.__CLASS__.'::'.__FUNCTION__.'()') : null;
 		$id = $item->id;
 		if (!isset(self::$parent[$id])) {
-			if ($item->type == 'component' && $item->component == 'com_kunena' && isset($item->query['view']) && $item->query['view'] == 'home') {
+			if ($item->component == 'com_kunena' && isset($item->query['view']) && $item->query['view'] == 'home') {
 				self::$parent[$id] = $item;
 			} else {
-				$parentid = $item->parent_id;
-				$parent = isset(self::$menu[$parentid]) ? self::$menu[$parentid] : null;
+				$parentId = $item->parent_id;
+				$parent = isset(self::$menu[$parentId]) ? self::$menu[$parentId] : null;
 				self::$parent[$id] = self::getHome($parent);
 			}
 		}
@@ -392,7 +392,7 @@ abstract class KunenaRoute {
 		KUNENA_PROFILER ? KunenaProfiler::instance()->start('function '.__CLASS__.'::'.__FUNCTION__.'()') : null;
 		if (self::$search === false) {
 			$user = KunenaUserHelper::getMyself();
-			$language = JFactory::getDocument()->getLanguage();
+			$language = strtolower(JFactory::getDocument()->getLanguage());
 			self::$search = false;
 
 			if (KunenaConfig::getInstance()->get('cache_mid')) {
@@ -403,24 +403,149 @@ abstract class KunenaRoute {
 
 			if (self::$search === false) {
 				self::$search['home'] = array();
-				foreach ( self::$menu as $item ) {
-					// Do not add menu items for other languages
-					if (isset($item->language) && $item->language  != '*' && strtolower($item->language) != strtolower($language))
+				foreach (self::$menu as $item) {
+					// Skip menu items that aren't pointing to Kunena or are using wrong language.
+					if (($item->component != 'com_kunena' && $item->type != 'alias')
+						|| ($item->language  != '*' && strtolower($item->language) != $language)) {
 						continue;
-
-					if ($item->type == 'alias' && !empty($item->query['Itemid']) && !empty(self::$menu[$item->query['Itemid']])) {
-						// Follow links
-						$item = self::$menu[$item->query['Itemid']];
-					} elseif ($item->type == 'component' && $item->component == 'com_kunena' && isset($item->query['view'])) {
-						// Save Kunena menu items so that we can make fast searches
-						$home = self::getHome($item);
-						self::$search[$item->query['view']][$home ? $home->id : 0][$item->id] = $item->id;
 					}
+
+					// Follow links.
+					if ($item->type == 'alias') {
+						if (empty($item->query['Itemid']) || empty(self::$menu[$item->query['Itemid']])) {
+							continue;
+						}
+						$item = self::$menu[$item->query['Itemid']];
+						if ($item->component != 'com_kunena' || ($item->language  != '*' && strtolower($item->language) != $language)) {
+							continue;
+						}
+					}
+
+					// Ignore legacy menu items without view in it.
+					if (!isset($item->query['view'])) {
+						continue;
+					}
+
+					// Save Kunena menu items so that we can make fast searches
+					$home = self::getHome($item);
+					self::$search[$item->query['view']][$home ? $home->id : 0][$item->id] = $item->id;
 				}
-				if (isset($cache)) $cache->store(serialize(self::$search), 'search', "com_kunena.route.v1.{$language}.{$user->userid}");
+
+				if (isset($cache)) {
+					$cache->store(serialize(self::$search), 'search', "com_kunena.route.v1.{$language}.{$user->userid}");
+				}
 			}
 		}
 		KUNENA_PROFILER ? KunenaProfiler::instance()->stop('function '.__CLASS__.'::'.__FUNCTION__.'()') : null;
+	}
+
+	public static function getCategoryUrl(KunenaForumCategory $category, $xhtml = true) {
+		static $uri = null;
+
+		if (!$uri) {
+			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$uri = JRoute::_("index.php?option=com_kunena&view=category&catid=@&Itemid={$itemid}", false);
+		}
+		$url = sprintf($uri, $category->alias);
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
+	}
+
+	public static function getTopicUrl(KunenaForumTopic $topic, $xhtml = true, $action = null,
+	                                   KunenaForumCategory $category = null) {
+		static $uris = null;
+		static $toMessage = null;
+
+		if (!$uris) {
+			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$uris = array();
+			$uris['first'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
+			$uris['start'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&limitstart=@&Itemid={$itemid}", false);
+			$uris['mesid'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&mesid=@&Itemid={$itemid}", false);
+			$uris['unread'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&layout=unread&Itemid={$itemid}", false);
+			$toMessage = KunenaUserHelper::getMyself()->getTopicLayout() == 'threaded';
+		}
+
+		if (!$category) $category = $topic->getCategory();
+		$start = 0;
+		$fragment = '';
+		$id = $topic->id;
+		$subject = self::stringURLSafe($topic->subject);
+
+		$uri = $uris['first'];
+		if ($action !== null) {
+			$mesid = 0;
+			$limit = max(1, intval(KunenaFactory::getConfig()->messages_per_page));
+			if ($action instanceof KunenaForumMessage) {
+				$mesid = $action->id;
+			} elseif ((string)$action === (string)(int)$action) {
+				if ($action > 0) {
+					$start = $action * $limit;
+				}
+			} else {
+				switch ($action) {
+					case 'first':
+						$mesid = $topic->first_post_id;
+						break;
+					case 'last':
+						$mesid = $topic->last_post_id;
+						break;
+					case 'unread':
+						$uri = $uris['unread'];
+						break;
+				}
+			}
+			if ($mesid) {
+				if ($toMessage) {
+					$uri = $uris['mesid'];
+					$start = $mesid;
+				} else {
+					$uri = $uris['start'];
+					$start = intval($topic->getPostLocation($mesid) / $limit) * $limit;
+					$fragment = "#{$mesid}";
+				}
+			}
+		}
+
+		$url = sprintf($uri, $category->alias, $subject ? "{$id}-{$subject}" : $id, $start) . $fragment;
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
+	}
+
+	public static function getMessageUrl(KunenaForumMessage $message, $xhtml = true,
+	                                     KunenaForumTopic $topic = null, KunenaForumCategory $category = null) {
+		static $uri = null;
+
+		if (!$uri) {
+			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$uri = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
+		}
+
+		if (!$category) $category = $message->getCategory();
+		if (!$topic) $topic = $message->getCategory();
+
+		$id = $topic->id;
+		$subject = self::stringURLSafe($topic->subject);
+
+		$url = sprintf($uri, $category->alias, $subject ? "{$id}-{$subject}" : $id);
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
+	}
+
+	public static function getUserUrl(KunenaUser $user, $xhtml = true) {
+		static $uri = null;
+
+		if (!$uri) {
+			$uri = 'index.php?option=com_kunena&view=user&userid=@';
+			$itemid = self::getItemID($uri);
+			$uri = JRoute::_("{$uri}&Itemid={$itemid}", false);
+		}
+		$id = $user->userid;
+		$username = self::stringURLSafe($user->getName());
+
+		$url = sprintf($uri, $username ? "{$id}-{$username}" : $id);
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
 
 	protected static function setItemID(JUri $uri) {
