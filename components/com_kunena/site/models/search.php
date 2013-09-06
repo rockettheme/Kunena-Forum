@@ -182,7 +182,12 @@ class KunenaModelSearch extends KunenaModel {
         ));
 
         $search->addIndex('kunena');
-        $resultSet = $search->search($queryObj);
+
+        try {
+            $resultSet = $search->search($queryObj);
+        } catch (Exception $e) {
+            throw new JException("Search Engine Failure",503);
+        }
 
         // Load the messages
         $msg_ids = array();
