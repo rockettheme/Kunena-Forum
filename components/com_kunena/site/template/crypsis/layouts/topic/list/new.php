@@ -30,19 +30,23 @@ $colspan = empty($this->topicActions) ? 5 : 6;
 		<?php else : ?>
 		<thead>
 			<tr>
-				<td colspan="<?php echo $colspan-1; ?>">
-					<div class="pagination pull-right"><?php echo $this->getPagination(5); ?></div>
+				<td colspan="5">
+					<div class="pagination pull-right">
+						<?php echo $this->subLayout('Pagination/List')->set('pagination', $this->pagination); ?>
+					</div>
 					<div class="clearfix"></div>
 				</td>
+				<?php if (!empty($this->topicActions)) : ?>
 				<td>
-					<?php if (!empty($this->topicActions)) : ?>
 					<input class="kcheckall" type="checkbox" name="toggle" value="" />
-					<?php endif; ?>
 				</td>
+				<?php endif; ?>
 			</tr>
 		</thead>
 		<tbody>
-			<?php $this->displayRows(); ?>
+			<?php foreach ($this->topics as $i => $topic)
+				echo $this->subLayout('Topic/List/Row')
+					->set('topic', $topic)->set('position', $i); ?>
 		</tbody>
 		<?php if (!empty($this->topicActions) || !empty($this->embedded)) : ?>
 		<tfoot>

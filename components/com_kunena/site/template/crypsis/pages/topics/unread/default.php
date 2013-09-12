@@ -2,7 +2,7 @@
 /**
  * Kunena Component
  * @package Kunena.Template.Crypsis
- * @subpackage Category
+ * @subpackage Pages.Search
  *
  * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
@@ -10,4 +10,4 @@
  **/
 defined ( '_JEXEC' ) or die ();
 
-echo $this->render('embed');
+echo $this->subRequest('Topic/List')->execute()->setLayout('new');
