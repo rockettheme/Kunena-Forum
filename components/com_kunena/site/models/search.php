@@ -30,7 +30,6 @@ class KunenaModelSearch extends KunenaModel {
 	protected function populateState() {
 		// Get search word list
 		$value = JString::trim ( JRequest::getString ( 'q', '' ) );
-		$value = str_replace('|plus|', '+', $value);
 
 		if ($value == JText::_('COM_KUNENA_GEN_SEARCH_BOX')) {
 			$value = '';
@@ -57,9 +56,6 @@ class KunenaModelSearch extends KunenaModel {
 
 		$value = JRequest::getString ( 'searchdate', 0 );
 		$this->setState ( 'query.searchdate', $value );
-
-		$value = JRequest::getInt ( 'searchadv', 0 );
-		$this->setState ( 'query.searchadv', $value );
 
 		$value = JRequest::getWord ( 'beforeafter', 'after' );
 		$this->setState ( 'query.beforeafter', $value );
@@ -120,19 +116,12 @@ class KunenaModelSearch extends KunenaModel {
 
         $this->filters = new Elastica\Filter\BoolAnd();
 
-        $q = $this->getState('searchwords');
+        $q = strip_tags($this->getState('searchwords'));
 
         // Keyword searching
         if ($q) {
-        	if ($this->getState('query.searchadv') == 0) {
-        		$q = strip_tags($q);
-        		$query = new Elastica\Query\MultiMatch();
 
-        	} else {
-        		$q = Elastica\Util::replaceBooleanWordsAndEscapeTerm($q);
-        		$query = new Elastica\Query\QueryString();
-        	}
-	        
+    		$query = new Elastica\Query\MultiMatch();
 	        $query->setQuery($q);
 
 	        $searchtype = $this->getState('query.searchtype');
@@ -495,7 +484,7 @@ class KunenaModelSearch extends KunenaModel {
 	public function getUrlParams() {
 		// Turn internal state into URL, but ignore default values
 		$defaults = array ('searchtype' => 0, 'searchuser' => '', 'exactname' => 0, 'childforums' => 0, 'starteronly' => 0,
-			'replyless' => 0, 'replylimit' => 0, 'searchdate' => '', 'searchadv' => 0, 'beforeafter' => 'after', 'sortby' => '',
+			'replyless' => 0, 'replylimit' => 0, 'searchdate' => '', 'beforeafter' => 'after', 'sortby' => '',
 			'order' => 'dec', 'catids' => '0', 'show' => '0', 'topic_id' => 0 );
 
 		$url_params = '';
