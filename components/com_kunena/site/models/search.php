@@ -507,8 +507,10 @@ class KunenaModelSearch extends KunenaModel {
 			$limitstr .= "&limitstart=$limitstart";
 		if ($limit > 0 && $limit != $config->messages_per_page_search)
 			$limitstr .= "&limit=$limit";
-		if ($searchword)
+		if ($searchword) {
+			$searchword = str_replace(array('"','*','?',')','(','[',']','&','@'), '', $searchword);
 			$searchword = '&q=' . urlencode ( $searchword );
+		}
 		return KunenaRoute::_ ( "index.php?option=com_kunena&view={$view}{$searchword}{$params}{$limitstr}", $xhtml );
 	}
 }
