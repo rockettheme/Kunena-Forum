@@ -38,31 +38,51 @@ class KunenaViewSearch extends KunenaView {
 
 		$this->row(true);
 
+
 		foreach ($this->data->results as $result) {
 
-			$this->message = $this->data->messages[$result->msgid];
+			$this->message = KunenaForumMessageHelper::get($result->msgid);
+			$this->score = sprintf("%.1f", $result->getScore() * 10);
 
-			$highlights = $result->getHighlights();
+			if ($this->message->subject == null) {
+				$this->empty = true;
+				$this->subjectHtml = $result->subject;
+				if ($result->parent) {
+	            	$this->subjectHtml = 'RE: '.$this->subjectHtml;
+	            }
+				
+				$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
 
-            $this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
-            if (isset($highlights['message'])) {
-                $this->messageHtml = implode('... ', $highlights['message']);
-            } else {
-                $this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
-            }
+			} else {
+				$this->empty = false;
+				$highlights = $result->getHighlights();
 
-            $this->score = sprintf("%.1f", $result->getScore() * 10);
+	            $this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
+	            if ($this->message->getParent()->id) {
+	            	$this->subjectHtml = 'RE: '.$this->subjectHtml;
+	            }
+	            if (isset($highlights['message'])) {
+	                $this->messageHtml = implode('... ', $highlights['message']);
+	            } else {
+	                $this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
+	            }
 
-			$this->topic = $this->message->getTopic();
-			$this->category = $this->message->getCategory();
-			$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
+	            
 
-			$profile = KunenaFactory::getUser((int)$this->message->userid);
-			$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+	            $this->parent = $this->message->getParent()->id;
+				$this->topic = $this->message->getTopic();
+				$this->category = $this->message->getCategory();
+				$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
 
-			$this->author = $this->message->getAuthor();
-			$this->topicAuthor = $this->topic->getAuthor();
-			$this->topicTime = $this->topic->first_post_time;
+				$profile = KunenaFactory::getUser((int)$this->message->userid);
+				$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+
+				$this->author = $this->message->getAuthor();
+				$this->topicAuthor = $this->topic->getAuthor();
+				$this->topicTime = $this->topic->first_post_time;	
+			}
+
+			
 
 			$contents = $this->loadTemplateFile('row');
 
@@ -87,6 +107,38 @@ class KunenaViewSearch extends KunenaView {
 			echo $this->loadTemplateFile('pagination');	
 		}
 	}
+
+	function getSuggestions($suggestion = 'simple_phrase') {
+
+        if (isset($this->data)) {
+        	$results = $this->data->results;
+        	$response = $results->getResponse();
+            $datas = $response->getData();
+            if (isset($datas['suggest'][$suggestion][0]['options'])) {
+                $suggest_data = $datas['suggest'][$suggestion][0]['options'];
+
+				$suggestions = array();
+				foreach ($suggest_data as $suggestion) {
+					$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
+				}
+				return $suggestions;	
+			}
+        }
+
+        return false;
+    }
+
+    function getSuggestUrl($suggestion) {
+
+    	$uri = JFactory::getURI();
+	    $query_string = $uri->getQuery();
+
+	    // remove the page element of the query if it is set
+	    parse_str($query_string,$query_array);
+	    $query_array['q'] = $suggestion;
+
+    	return ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
+    }
 
 	function displaySearchResults() {
 		if(isset($this->data)) {

@@ -30,6 +30,7 @@ class KunenaModelSearch extends KunenaModel {
 	protected function populateState() {
 		// Get search word list
 		$value = JString::trim ( JRequest::getString ( 'q', '' ) );
+
 		if ($value == JText::_('COM_KUNENA_GEN_SEARCH_BOX')) {
 			$value = '';
 		}
@@ -115,14 +116,13 @@ class KunenaModelSearch extends KunenaModel {
 
         $this->filters = new Elastica\Filter\BoolAnd();
 
-        $q = $this->sanitizeQuery($this->getState('searchwords'));
+        $q = strip_tags($this->getState('searchwords'));
 
         // Keyword searching
         if ($q) {
-	        $query = new Elastica\Query\MultiMatch();
-	        $query->setQuery($q);
 
-	        xdebug_break();
+    		$query = new Elastica\Query\MultiMatch();
+	        $query->setQuery($q);
 
 	        $searchtype = $this->getState('query.searchtype');
 
@@ -169,22 +169,27 @@ class KunenaModelSearch extends KunenaModel {
                 )
             ),
         ));
-        // $queryObj->setParam('suggest', array(
-        //     'text' => $q,
-        //     "simple_phrase" => array(
-        //         "phrase" => array(
-        //             "field" => "_all",
-        //             "size" => 1,
-        //             "real_word_error_likelihood" => 0.95,
-        //             "confidence" => 2.0,
-        //             "max_errors" => 0.5,
-        //             "gram_size" => 2
-        //         )
-        //     )
-        // ));
+        $queryObj->setParam('suggest', array(
+            'text' => $q,
+            "simple_phrase" => array(
+                "phrase" => array(
+                    "field" => "subject",
+                    "size" => 5,
+                    "real_word_error_likelihood" => 0.95,
+                    "confidence" => 2.0,
+                    "max_errors" => 0.5,
+                    "gram_size" => 3
+                )
+            )
+        ));
 
         $search->addIndex('kunena');
-        $resultSet = $search->search($queryObj);
+
+        try {
+            $resultSet = $search->search($queryObj);
+        } catch (Exception $e) {
+            throw new JException("Search Engine Failure",503);
+        }
 
         // Load the messages
         $msg_ids = array();
@@ -216,6 +221,7 @@ class KunenaModelSearch extends KunenaModel {
         $data->pages = intval(ceil($data->hits / $limit));
         $data->from = $from;
         $data->size = $limit;
+        $data->query = $q;
         $data->count = $resultSet->count();
         $data->time = 0.001 * $resultSet->getTotalTime();
         //$data->suggestions = $this->getSuggestions($resultSet);
@@ -341,7 +347,7 @@ class KunenaModelSearch extends KunenaModel {
 
 
 	protected function sanitizeQuery($query) {
-        return htmlentities(strip_tags(trim($query)));
+        return Elastica\Util::replaceBooleanWordsAndEscapeTerm($query);
     }
 
 	protected function setSortOrder(&$query) {
@@ -503,8 +509,10 @@ class KunenaModelSearch extends KunenaModel {
 			$limitstr .= "&limitstart=$limitstart";
 		if ($limit > 0 && $limit != $config->messages_per_page_search)
 			$limitstr .= "&limit=$limit";
-		if ($searchword)
+		if ($searchword) {
+			$searchword = str_replace(array('"','*','?',')','(','[',']','&','@'), '', $searchword);
 			$searchword = '&q=' . urlencode ( $searchword );
+		}
 		return KunenaRoute::_ ( "index.php?option=com_kunena&view={$view}{$searchword}{$params}{$limitstr}", $xhtml );
 	}
 }
