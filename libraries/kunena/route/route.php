@@ -460,7 +460,7 @@ abstract class KunenaRoute {
 			$itemid = isset(self::$home) ? self::$home->id : 0;
 			$uris = array();
 			$uris['first'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
-			$uris['start'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&limitstart=@&Itemid={$itemid}", false);
+			$uris['start'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&start=@&Itemid={$itemid}", false);
 			$uris['mesid'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&mesid=@&Itemid={$itemid}", false);
 			$uris['unread'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&layout=unread&Itemid={$itemid}", false);
 			$toMessage = KunenaUserHelper::getMyself()->getTopicLayout() == 'threaded';
@@ -507,7 +507,7 @@ abstract class KunenaRoute {
 			}
 		}
 
-		$url = sprintf($uri, $category->alias, $subject ? "{$id}-{$subject}" : $id, $start) . $fragment;
+		$url = sprintf($uri, $category->alias, ($subject ? "{$id}-{$subject}" : $id), $start) . $fragment;
 
 		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
