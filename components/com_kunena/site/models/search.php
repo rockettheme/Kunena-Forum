@@ -24,7 +24,7 @@ require_once(JPATH_SITE.'/components/com_elasticsearch/helpers/elasticsearch.php
 class KunenaModelSearch extends KunenaModel {
 	protected $error = null;
 	protected $total = false;
-	protected $messages = false;
+	protected $data = null;
 	protected $filters = false;
 
 	protected function populateState() {
@@ -98,6 +98,10 @@ class KunenaModelSearch extends KunenaModel {
 		$this->setState ( 'list.limit', $value );
 	}
 
+	public function getSearchwords() {
+		return $this->getState('searchwords');
+	}
+
 	public function getShowResults() {
 		if ($this->getState('searchwords') || $this->getState('query.searchuser')) {
 			return true;
@@ -105,7 +109,13 @@ class KunenaModelSearch extends KunenaModel {
 		return false;
 	}
 
-	public function getSearchResults() {
+	public function getTotal() {
+		if (!$this->data) $this->getResults();
+		return $this->data->total;
+	}
+
+	public function getResults() {
+		if ($this->data) return $this->data;
 
 		$search = ElasticsearchHelper::getSearch();
 
@@ -228,7 +238,9 @@ class KunenaModelSearch extends KunenaModel {
         $data->results = $resultSet;
         $data->messages = $this->messages;
 
-        return $data;
+		$this->data = $data;
+
+		return $data;
 	}
 
 	protected function getSortOrder() {
@@ -377,7 +389,7 @@ class KunenaModelSearch extends KunenaModel {
 	}
 
 	protected function getUsernameFilter() {
-
+		$db = JFactory::getDbo();
 		$username = $this->getState('query.searchuser');
 		if ($username) {
 			if ($this->getState('query.exactname') == '1') {
@@ -389,7 +401,7 @@ class KunenaModelSearch extends KunenaModel {
 	}
 
 	protected function buildWhere() {
-		$db = JFactory::getDBO ();
+		$db = JFactory::getDbo();
 		$querystrings = array();
 
 		foreach ( $this->getSearchWords() as $searchword ) {
