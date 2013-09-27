@@ -14,46 +14,55 @@ class KunenaLayoutSearch extends KunenaLayout
 {
 	function displayModeList($id, $attributes = '') {
 		$options	= array();
-		$options[]	= JHtml::_('select.option',  '0', JText::_('COM_KUNENA_SEARCH_SEARCH_POSTS') );
+		$options[]	= JHtml::_('select.option',  '0', 'Search title and message content' );
 		$options[]	= JHtml::_('select.option',  '1', JText::_('COM_KUNENA_SEARCH_SEARCH_TITLES') );
-		echo JHtml::_('select.genericlist',  $options, 'titleonly', $attributes, 'value', 'text', $this->state->get('query.titleonly'), $id );
+		$options[]	= JHtml::_('select.option',  '2', 'Search messages only' );
+		$options[]	= JHtml::_('select.option',  '3', 'Search first post of topics only' );
+		echo JHtml::_('select.genericlist',  $options, 'searchtype', $attributes, 'value', 'text', $this->state->get('query.searchtype'), $id );
 	}
+
 	function displayDateList($id, $attributes = '') {
 		$options	= array();
+		$options[]	= JHtml::_('select.option',  '', JText::_('COM_KUNENA_SEARCH_DATE_ANY') );
 		$options[]	= JHtml::_('select.option',  'lastvisit', JText::_('COM_KUNENA_SEARCH_DATE_LASTVISIT') );
-		$options[]	= JHtml::_('select.option',  '1', JText::_('COM_KUNENA_SEARCH_DATE_YESTERDAY') );
-		$options[]	= JHtml::_('select.option',  '7', JText::_('COM_KUNENA_SEARCH_DATE_WEEK') );
-		$options[]	= JHtml::_('select.option',  '14',  JText::_('COM_KUNENA_SEARCH_DATE_2WEEKS') );
-		$options[]	= JHtml::_('select.option',  '30', JText::_('COM_KUNENA_SEARCH_DATE_MONTH') );
-		$options[]	= JHtml::_('select.option',  '90', JText::_('COM_KUNENA_SEARCH_DATE_3MONTHS') );
-		$options[]	= JHtml::_('select.option',  '180', JText::_('COM_KUNENA_SEARCH_DATE_6MONTHS') );
-		$options[]	= JHtml::_('select.option',  '365', JText::_('COM_KUNENA_SEARCH_DATE_YEAR') );
-		$options[]	= JHtml::_('select.option',  'all', JText::_('COM_KUNENA_SEARCH_DATE_ANY') );
+		$options[]	= JHtml::_('select.option',  '-1d', JText::_('COM_KUNENA_SEARCH_DATE_YESTERDAY') );
+		$options[]	= JHtml::_('select.option',  '-1w', JText::_('COM_KUNENA_SEARCH_DATE_WEEK') );
+		$options[]	= JHtml::_('select.option',  '-2w',  JText::_('COM_KUNENA_SEARCH_DATE_2WEEKS') );
+		$options[]	= JHtml::_('select.option',  '-1M', JText::_('COM_KUNENA_SEARCH_DATE_MONTH') );
+		$options[]	= JHtml::_('select.option',  '-3M', JText::_('COM_KUNENA_SEARCH_DATE_3MONTHS') );
+		$options[]	= JHtml::_('select.option',  '-6M', JText::_('COM_KUNENA_SEARCH_DATE_6MONTHS') );
+		$options[]	= JHtml::_('select.option',  '-12M', JText::_('COM_KUNENA_SEARCH_DATE_YEAR') );
+		
 		echo JHtml::_('select.genericlist',  $options, 'searchdate', $attributes, 'value', 'text', $this->state->get('query.searchdate'), $id );
 	}
+
 	function displayBeforeAfterList($id, $attributes = '') {
 		$options	= array();
 		$options[]	= JHtml::_('select.option',  'after', JText::_('COM_KUNENA_SEARCH_DATE_NEWER') );
 		$options[]	= JHtml::_('select.option',  'before', JText::_('COM_KUNENA_SEARCH_DATE_OLDER') );
 		echo JHtml::_('select.genericlist',  $options, 'beforeafter', $attributes, 'value', 'text', $this->state->get('query.beforeafter'), $id );
 	}
+
 	function displaySortByList($id, $attributes = '') {
 		$options	= array();
+		$options[]  = JHtml::_('select.option',	 '', JText::_('Score, Date') );
+		$options[]	= JHtml::_('select.option',  'lastpost', JText::_('COM_KUNENA_SEARCH_SORTBY_POST') );
 		$options[]	= JHtml::_('select.option',  'title', JText::_('COM_KUNENA_SEARCH_SORTBY_TITLE') );
 //		$options[]	= JHtml::_('select.option',  'replycount', JText::_('COM_KUNENA_SEARCH_SORTBY_POSTS') );
 		$options[]	= JHtml::_('select.option',  'views', JText::_('COM_KUNENA_SEARCH_SORTBY_VIEWS') );
 //		$options[]	= JHtml::_('select.option',  'threadstart', JText::_('COM_KUNENA_SEARCH_SORTBY_START') );
-		$options[]	= JHtml::_('select.option',  'lastpost', JText::_('COM_KUNENA_SEARCH_SORTBY_POST') );
-//		$options[]	= JHtml::_('select.option',  'postusername', JText::_('COM_KUNENA_SEARCH_SORTBY_USER') );
+		$options[]	= JHtml::_('select.option',  'postusername', JText::_('COM_KUNENA_SEARCH_SORTBY_USER') );
 		$options[]	= JHtml::_('select.option',  'forum', JText::_('COM_KUNENA_CATEGORY') );
 		echo JHtml::_('select.genericlist',  $options, 'sortby', $attributes, 'value', 'text', $this->state->get('query.sortby'), $id );
 	}
+
 	function displayOrderList($id, $attributes = '') {
 		$options	= array();
 		$options[]	= JHtml::_('select.option',  'inc', JText::_('COM_KUNENA_SEARCH_SORTBY_INC') );
 		$options[]	= JHtml::_('select.option',  'dec', JText::_('COM_KUNENA_SEARCH_SORTBY_DEC') );
 		echo JHtml::_('select.genericlist',  $options, 'order', $attributes, 'value', 'text', $this->state->get('query.order'), $id );
 	}
+
 	function displayLimitList($id, $attributes = '') {
 		// Limit value list
 		$options	= array();
@@ -63,6 +72,7 @@ class KunenaLayoutSearch extends KunenaLayout
 		$options[]	= JHtml::_('select.option',  '20', JText::_('COM_KUNENA_SEARCH_LIMIT20') );
 		echo JHtml::_('select.genericlist',  $options, 'limit', $attributes, 'value', 'text',$this->state->get('list.limit'), $id );
 	}
+
 	function displayCategoryList($id, $attributes = '') {
 		//category select list
 		$options	= array ();
@@ -72,45 +82,69 @@ class KunenaLayoutSearch extends KunenaLayout
 		echo JHtml::_('kunenaforum.categorylist', 'catids[]', 0, $options, $cat_params, $attributes, 'value', 'text', $this->state->get('query.catids'), $id);
 	}
 
-	function displayRows() {
-		// Run events
-		$params = new JRegistry();
-		$params->set('ksource', 'kunena');
-		$params->set('kunena_view', 'search');
-		$params->set('kunena_layout', 'default');
-
-		$dispatcher = JDispatcher::getInstance();
-		JPluginHelper::importPlugin('kunena');
-
-		$dispatcher->trigger('onKunenaPrepare', array ('kunena.messages', &$this->results, &$params, 0));
-
-		foreach ($this->results as $this->message) {
-			$this->topic = $this->message->getTopic();
-			$this->category = $this->message->getCategory();
-			$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
-			$ressubject = KunenaHtmlParser::parseText ($this->message->subject);
-			$resmessage = KunenaHtmlParser::parseBBCode($this->message->message, $this, 500);
-
-			$profile = KunenaFactory::getUser((int)$this->message->userid);
-			$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
-
-			foreach ( $this->searchwords as $searchword ) {
-				if (empty ( $searchword )) continue;
-				$ressubject = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $ressubject );
-				// FIXME: enable highlighting, but only after we can be sure that we do not break html
-				//$resmessage = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $resmessage );
-			}
-			$this->author = $this->message->getAuthor();
-			$this->topicAuthor = $this->topic->getAuthor();
-			$this->topicTime = $this->topic->first_post_time;
-			$this->subjectHtml = $ressubject;
-			$this->messageHtml = $resmessage;
-
-			$contents = $this->render('row/'.$this->getLayout());
-			$contents = preg_replace_callback('|\[K=(\w+)(?:\:([\w-_]+))?\]|', array($this, 'fillTopicInfo'), $contents);
-			echo $contents;
+	function displaySearchResults() {
+		if(isset($this->data)) {
+			echo $this->loadTemplateFile('results');
+		} else {
+			echo "enter keywords and/or a username...";
 		}
 	}
+
+	function displayPagination() {
+		if ($this->data->pages > 1) {
+
+			$uri = JFactory::getURI();
+		    $query_string = $uri->getQuery();
+
+		    // remove the page element of the query if it is set
+		    parse_str($query_string, $query_array);
+		    unset($query_array['page']);
+
+		    $this->pageurl = ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
+
+			echo $this->loadTemplateFile('pagination');	
+		}
+	}
+
+	// function displayRows() {
+	// 	// Run events
+	// 	$params = new JRegistry();
+	// 	$params->set('ksource', 'kunena');
+	// 	$params->set('kunena_view', 'search');
+	// 	$params->set('kunena_layout', 'default');
+
+	// 	$dispatcher = JDispatcher::getInstance();
+	// 	JPluginHelper::importPlugin('kunena');
+
+	// 	$dispatcher->trigger('onKunenaPrepare', array ('kunena.messages', &$this->results, &$params, 0));
+
+	// 	foreach ($this->results as $this->message) {
+	// 		$this->topic = $this->message->getTopic();
+	// 		$this->category = $this->message->getCategory();
+	// 		$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
+	// 		$ressubject = KunenaHtmlParser::parseText ($this->message->subject);
+	// 		$resmessage = KunenaHtmlParser::parseBBCode($this->message->message, $this, 500);
+
+	// 		$profile = KunenaFactory::getUser((int)$this->message->userid);
+	// 		$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+
+	// 		foreach ( $this->searchwords as $searchword ) {
+	// 			if (empty ( $searchword )) continue;
+	// 			$ressubject = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $ressubject );
+	// 			// FIXME: enable highlighting, but only after we can be sure that we do not break html
+	// 			//$resmessage = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $resmessage );
+	// 		}
+	// 		$this->author = $this->message->getAuthor();
+	// 		$this->topicAuthor = $this->topic->getAuthor();
+	// 		$this->topicTime = $this->topic->first_post_time;
+	// 		$this->subjectHtml = $ressubject;
+	// 		$this->messageHtml = $resmessage;
+
+	// 		$contents = $this->render('row/'.$this->getLayout());
+	// 		$contents = preg_replace_callback('|\[K=(\w+)(?:\:([\w-_]+))?\]|', array($this, 'fillTopicInfo'), $contents);
+	// 		echo $contents;
+	// 	}
+	// }
 
 	function fillTopicInfo($matches) {
 		switch ($matches[1]) {
