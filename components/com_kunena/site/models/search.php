@@ -89,10 +89,6 @@ class KunenaModelSearch extends KunenaModel {
 		if ($value < 0) $value = 0;
 		$this->setState ( 'list.start', $value );
 
-		$value = $this->getInt ( 'page', 1 );
-		if ($value < 1) $value = 1;
-		$this->setState ( 'list.page', $value );
-
 		$value = $this->getInt ( 'limit', 0 );
 		if ($value < 1 || $value > 100) $value = $this->config->messages_per_page_search;
 		$this->setState ( 'list.limit', $value );
@@ -111,7 +107,7 @@ class KunenaModelSearch extends KunenaModel {
 
 	public function getTotal() {
 		if (!$this->data) $this->getResults();
-		return $this->data->total;
+		return $this->data->hits;
 	}
 
 	public function getResults() {
@@ -121,8 +117,7 @@ class KunenaModelSearch extends KunenaModel {
 
 		// setup some paging information
         $limit = $this->getState('list.limit');
-        $page = $this->getState('list.page');
-        $from = ($page-1) * $limit;
+        $from = $this->getState('list.start');
 
         $this->filters = new Elastica\Filter\BoolAnd();
 
@@ -227,7 +222,7 @@ class KunenaModelSearch extends KunenaModel {
         $data = new JObject;
         $data->total = $resultSet->getTotalHits();
         $data->hits = $resultSet->getTotalHits() > ES_MAX_RESULTS ? ES_MAX_RESULTS : $resultSet->getTotalHits();
-        $data->page = $page;
+        $data->page = ceil(($from+1) / $limit);
         $data->pages = intval(ceil($data->hits / $limit));
         $data->from = $from;
         $data->size = $limit;

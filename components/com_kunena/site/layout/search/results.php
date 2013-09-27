@@ -59,20 +59,14 @@ class KunenaLayoutSearchResults extends KunenaLayout
 		}
 	}
 
-	public function displayPagination() {
-		if ($this->data->pages > 1) {
+	public static function getUri($params=array()) {
+		$uri = JUri::getInstance();
 
-			$uri = JFactory::getURI();
-			$query_string = $uri->getQuery();
-
-			// remove the page element of the query if it is set
-			parse_str($query_string, $query_array);
-			unset($query_array['page']);
-
-			$this->pageurl = ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
-
-			echo $this->subLayout('Search/Pagination');
+		foreach($params as $key=>$value) {
+			$uri->setVar($key, $value);
 		}
+
+		return $uri;
 	}
 
 	public function getSuggestions($suggestion = 'simple_phrase') {
@@ -95,14 +89,6 @@ class KunenaLayoutSearchResults extends KunenaLayout
 	}
 
 	public function getSuggestUrl($suggestion) {
-
-		$uri = JFactory::getURI();
-		$query_string = $uri->getQuery();
-
-		// remove the page element of the query if it is set
-		parse_str($query_string,$query_array);
-		$query_array['q'] = $suggestion;
-
-		return ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
+		return $this->getUri(array('q'=>$suggestion));
 	}
 }
