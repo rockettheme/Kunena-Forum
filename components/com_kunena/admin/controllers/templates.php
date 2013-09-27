@@ -35,7 +35,8 @@ class KunenaAdminControllerTemplates extends KunenaController {
 
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		if ($id) {
@@ -46,13 +47,14 @@ class KunenaAdminControllerTemplates extends KunenaController {
 		$template->clearCache();
 
 		$this->app->enqueueMessage ( JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_DEFAULT_SELECTED'));
-		$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+		$this->setRedirect(KunenaRoute::_($this->baseurl, false));
 	}
 
 	function add() {
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		$this->setRedirect(KunenaRoute::_($this->baseurl."&layout=add", false));
@@ -85,7 +87,8 @@ class KunenaAdminControllerTemplates extends KunenaController {
 
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		if (!$file || !is_uploaded_file ( $file ['tmp_name'])) {
@@ -130,7 +133,7 @@ class KunenaAdminControllerTemplates extends KunenaController {
 				JError::raiseWarning(100, JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_TEMPLATE').' '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_UNINSTALL').': '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_DIR_NOT_EXIST'));
 			}
 		}
-		$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+		$this->setRedirect(KunenaRoute::_($this->baseurl, false));
 	}
 
 	function uninstall() {
@@ -140,22 +143,25 @@ class KunenaAdminControllerTemplates extends KunenaController {
 
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		// Initialize variables
 		$otemplate = KunenaTemplateHelper::parseXmlFile($id);
 		if ( !$otemplate ) {
 			$this->app->enqueueMessage ( JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_TEMPLATE_NOT_SPECIFIED'), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 		if ( in_array($id, $this->locked) ) {
 			$this->app->enqueueMessage ( JText::sprintf('COM_KUNENA_A_CTRL_TEMPLATES_ERROR_UNINSTALL_SYSTEM_TEMPLATE', $otemplate->name), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 		if ( KunenaTemplateHelper::isDefault($template) ) {
 			$this->app->enqueueMessage ( JText::sprintf('COM_KUNENA_A_CTRL_TEMPLATES_ERROR_UNINSTALL_DEFAULT_TEMPLATE', $otemplate->name), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
 			return;
 		}
 		$tpl = KPATH_SITE . '/template/'.$template;
@@ -169,7 +175,7 @@ class KunenaAdminControllerTemplates extends KunenaController {
 			JError::raiseWarning(100, JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_TEMPLATE').' '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_UNINSTALL').': '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_DIR_NOT_EXIST'));
 			$retval = false;
 		}
-		$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+		$this->setRedirect(KunenaRoute::_($this->baseurl, false));
 	}
 
 	function choosecss() {
@@ -201,16 +207,19 @@ class KunenaAdminControllerTemplates extends KunenaController {
 
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		if (!$template) {
 			$this->app->enqueueMessage (JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_OPERATION_FAILED').': '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_TEMPLATE_NOT_SPECIFIED.'));
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 		if (!$filecontent) {
 			$this->app->enqueueMessage (JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_OPERATION_FAILED').': '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_CONTENT_EMPTY'));
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 		// Set FTP credentials, if given
 		JClientHelper::setCredentialsFromRequest('ftp');
@@ -239,18 +248,20 @@ class KunenaAdminControllerTemplates extends KunenaController {
 
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		if (!$template) {
 			$this->app->enqueueMessage ( JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_OPERATION_FAILED').': '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_TEMPLATE_NOT_SPECIFIED'));
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		$this->_saveParamFile($template);
 
 		$this->app->enqueueMessage (JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_CONFIGURATION_SAVED'));
-		$this->app->redirect ( KunenaRoute::_($this->baseurl.'&layout=edit&cid[]='.$template, false) );
+		$this->setRedirect(KunenaRoute::_($this->baseurl.'&layout=edit&cid[]='.$template, false));
 	}
 
 	function save() {
@@ -260,18 +271,20 @@ class KunenaAdminControllerTemplates extends KunenaController {
 
 		if (! JSession::checkToken('post')) {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_ERROR_TOKEN' ), 'error' );
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		if (!$template) {
 			$this->app->enqueueMessage ( JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_OPERATION_FAILED').': '.JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_TEMPLATE_NOT_SPECIFIED'));
-			$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+			$this->setRedirect(KunenaRoute::_($this->baseurl, false));
+			return;
 		}
 
 		$this->_saveParamFile($template);
 
 		$this->app->enqueueMessage (JText::_('COM_KUNENA_A_TEMPLATE_MANAGER_CONFIGURATION_SAVED'));
-		$this->app->redirect ( KunenaRoute::_($this->baseurl, false) );
+		$this->setRedirect(KunenaRoute::_($this->baseurl, false));
 	}
 
 	/**
