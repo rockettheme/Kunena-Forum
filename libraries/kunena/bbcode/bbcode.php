@@ -996,6 +996,10 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 			return '[' . ($default ? $default : JText::_ ('COM_KUNENA_BBCODE_SPOILER')) . ']';
 		}
 		$document = JFactory::getDocument();
+
+		jimport('rokcommonjs.rokcommonjs');
+		RokCommonJS::load(array('core.core', 'forum.user.spoiler'));
+
 		if (!($document instanceof JDocumentHTML)) {
 			// Static version
 			return '<div class="kspoiler"><div class="kspoiler-header"><span class="kspoiler-title">' . ($default ? ($default) : (JText::_ ( 'COM_KUNENA_BBCODE_SPOILER' )))
