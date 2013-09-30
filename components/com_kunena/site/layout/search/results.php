@@ -13,41 +13,82 @@ defined ( '_JEXEC' ) or die ();
 class KunenaLayoutSearchResults extends KunenaLayout
 {
 	public function displayRows() {
-		// Run events
-		$params = new JRegistry();
-		$params->set('ksource', 'kunena');
-		$params->set('kunena_view', 'search');
-		$params->set('kunena_layout', 'default');
+		foreach ($this->data->results as $result) {
 
-		$dispatcher = JDispatcher::getInstance();
-		JPluginHelper::importPlugin('kunena');
+			$this->message = KunenaForumMessageHelper::get($result->msgid);
+			$this->score = sprintf("%.1f", $result->getScore() * 10);
 
-		$dispatcher->trigger('onKunenaPrepare', array ('kunena.messages', &$this->results, &$params, 0));
+			if ($this->message->subject == null) {
+				$this->empty = true;
+				$this->subjectHtml = $result->subject;
+				if ($result->parent) {
+					$this->subjectHtml = 'Re: '.$this->subjectHtml;
+				}
 
-		foreach ($this->results as $this->message) {
-			$this->topic = $this->message->getTopic();
-			$this->category = $this->message->getCategory();
-			$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
-			$ressubject = KunenaHtmlParser::parseText ($this->message->subject);
-			$resmessage = KunenaHtmlParser::parseBBCode($this->message->message, 500);
+				$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
 
-			$profile = KunenaFactory::getUser((int)$this->message->userid);
-			$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+			} else {
+				$this->empty = false;
+				$highlights = $result->getHighlights();
 
-			foreach ( $this->searchwords as $searchword ) {
-				if (empty ( $searchword )) continue;
-				$ressubject = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $ressubject );
-				// FIXME: enable highlighting, but only after we can be sure that we do not break html
-				//$resmessage = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $resmessage );
+				$this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
+				if ($this->message->getParent()->id) {
+					$this->subjectHtml = 'Re: '.$this->subjectHtml;
+				}
+				if (isset($highlights['message'])) {
+					$this->messageHtml = implode('... ', $highlights['message']);
+				} else {
+					$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
+				}
+
+				$this->parent = $this->message->getParent()->id;
+				$this->topic = $this->message->getTopic();
+				$this->category = $this->message->getCategory();
+				$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
+
+				$profile = KunenaFactory::getUser((int)$this->message->userid);
+				$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+
+				$this->author = $this->message->getAuthor();
+				$this->topicAuthor = $this->topic->getAuthor();
+				$this->topicTime = $this->topic->first_post_time;
 			}
-			$this->author = $this->message->getAuthor();
-			$this->topicAuthor = $this->topic->getAuthor();
-			$this->topicTime = $this->topic->first_post_time;
-			$this->subjectHtml = $ressubject;
-			$this->messageHtml = $resmessage;
 
 			$contents = $this->subLayout('Search/Results/Row')->setProperties($this->getProperties());
 			echo $contents;
 		}
+	}
+
+	public static function getUri($params=array()) {
+		$uri = JUri::getInstance();
+
+		foreach($params as $key=>$value) {
+			$uri->setVar($key, $value);
+		}
+
+		return $uri;
+	}
+
+	public function getSuggestions($suggestion = 'simple_phrase') {
+		if (isset($this->data->results)) {
+			$results = $this->data->results;
+			$response = $results->getResponse();
+			$datas = $response->getData();
+			if (isset($datas['suggest'][$suggestion][0]['options'])) {
+				$suggest_data = $datas['suggest'][$suggestion][0]['options'];
+
+				$suggestions = array();
+				foreach ($suggest_data as $suggestion) {
+					$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
+				}
+				return $suggestions;
+			}
+		}
+
+		return false;
+	}
+
+	public function getSuggestUrl($suggestion) {
+		return $this->getUri(array('q'=>$suggestion));
 	}
 }
