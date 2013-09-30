@@ -10,5 +10,5 @@
  **/
 defined ( '_JEXEC' ) or die ();
 
-echo $this->subRequest('Search/Form', $this->input);
-echo $this->subRequest('Search/Results', $this->input);
+echo $this->subRequest('Statistics/General');
+echo $this->subRequest('Statistics/WhoIsOnline');
