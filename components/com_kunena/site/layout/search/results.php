@@ -12,6 +12,18 @@ defined ( '_JEXEC' ) or die ();
 
 class KunenaLayoutSearchResults extends KunenaLayout
 {
+	public function processResults() {
+
+		$this->getSuggestions();
+		$this->start = $this->pagination->limitstart + 1;
+		$this->end = $this->start + $this->pagination->limit - 1;
+		
+	}
+
+	public function getTopicUrl($topic) {
+		return $topic->getUrl($topic->getCategory(), true, null);
+	}
+
 	public function displayRows() {
 		foreach ($this->data->results as $result) {
 
@@ -70,6 +82,7 @@ class KunenaLayoutSearchResults extends KunenaLayout
 	}
 
 	public function getSuggestions($suggestion = 'simple_phrase') {
+		$this->suggestions = false;
 		if (isset($this->data->results)) {
 			$results = $this->data->results;
 			$response = $results->getResponse();
@@ -81,11 +94,10 @@ class KunenaLayoutSearchResults extends KunenaLayout
 				foreach ($suggest_data as $suggestion) {
 					$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
 				}
-				return $suggestions;
+				$this->suggestions = $suggestions;
 			}
 		}
-
-		return false;
+		return;
 	}
 
 	public function getSuggestUrl($suggestion) {
