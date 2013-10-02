@@ -98,20 +98,24 @@ class KunenaModelSearch extends KunenaModel {
 		return $this->getState('searchwords');
 	}
 
-	public function getShowResults() {
-		if ($this->getState('searchwords') || $this->getState('query.searchuser')) {
-			return true;
-		} 
-		return false;
-	}
-
 	public function getTotal() {
-		if (!$this->data) $this->getResults();
-		return $this->data->hits;
+		$this->getResults();
+		return $this->total;
 	}
 
 	public function getResults() {
+
+		// Don't process if already set
 		if ($this->data) return $this->data;
+
+		// Don't process if not needed
+		if (!($this->getState('searchwords') || $this->getState('query.searchuser'))) {
+			$this->total = -1;
+			$this->data = new stdClass();
+			$this->data->count = 0;
+			$this->data->hits = 0;
+			return $this->data;
+		}
 
 		$search = ElasticsearchHelper::getSearch();
 
@@ -234,6 +238,7 @@ class KunenaModelSearch extends KunenaModel {
         $data->messages = $this->messages;
 
 		$this->data = $data;
+		$this->total = $data->hits;
 
 		return $data;
 	}
@@ -357,136 +362,136 @@ class KunenaModelSearch extends KunenaModel {
         return Elastica\Util::replaceBooleanWordsAndEscapeTerm($query);
     }
 
-	protected function setSortOrder(&$query) {
-		if ($this->getState('query.order') == 'dec')
-			$order1 = 'desc';
-		else
-			$order1 = 'asc';
-		switch ($this->getState('query.sortby')) {
-			case 'lastpost' :
-				$orderby = "m.time {$order1}";
-				break;
-			case 'title' :
-				$orderby = "m.subject {$order1}, m.time {$order1}";
-				break;
-			case 'views' :
-				$orderby = "m.hits {$order1}, m.time {$order1}";
-				break;
-			case 'forum' :
-				$orderby = "m.catid {$order1}, m.time {$order1}";
-				break;
-			case 'score' :
-			default :
-				$orderby = "m.score {$order1}";
-		}
+	// protected function setSortOrder(&$query) {
+	// 	if ($this->getState('query.order') == 'dec')
+	// 		$order1 = 'desc';
+	// 	else
+	// 		$order1 = 'asc';
+	// 	switch ($this->getState('query.sortby')) {
+	// 		case 'lastpost' :
+	// 			$orderby = "m.time {$order1}";
+	// 			break;
+	// 		case 'title' :
+	// 			$orderby = "m.subject {$order1}, m.time {$order1}";
+	// 			break;
+	// 		case 'views' :
+	// 			$orderby = "m.hits {$order1}, m.time {$order1}";
+	// 			break;
+	// 		case 'forum' :
+	// 			$orderby = "m.catid {$order1}, m.time {$order1}";
+	// 			break;
+	// 		case 'score' :
+	// 		default :
+	// 			$orderby = "m.score {$order1}";
+	// 	}
 
-		return $orderby;		
-	}
+	// 	return $orderby;		
+	// }
 
-	protected function getUsernameFilter() {
-		$db = JFactory::getDbo();
-		$username = $this->getState('query.searchuser');
-		if ($username) {
-			if ($this->getState('query.exactname') == '1') {
-				$querystrings [] = "m.name LIKE '" . $db->escape ( $username ) . "'";
-			} else {
-				$querystrings [] = "m.name LIKE '%" . $db->escape ( $username ) . "%'";
-			}
-		}
-	}
+	// protected function getUsernameFilter() {
+	// 	$db = JFactory::getDbo();
+	// 	$username = $this->getState('query.searchuser');
+	// 	if ($username) {
+	// 		if ($this->getState('query.exactname') == '1') {
+	// 			$querystrings [] = "m.name LIKE '" . $db->escape ( $username ) . "'";
+	// 		} else {
+	// 			$querystrings [] = "m.name LIKE '%" . $db->escape ( $username ) . "%'";
+	// 		}
+	// 	}
+	// }
 
-	protected function buildWhere() {
-		$db = JFactory::getDbo();
-		$querystrings = array();
+	// protected function buildWhere() {
+	// 	$db = JFactory::getDbo();
+	// 	$querystrings = array();
 
-		foreach ( $this->getSearchWords() as $searchword ) {
-			$searchword = $db->escape ( JString::trim ( $searchword ) );
-			if (empty ( $searchword ))
-				continue;
-			$not = '';
-			$operator = ' OR ';
+	// 	foreach ( $this->getSearchWords() as $searchword ) {
+	// 		$searchword = $db->escape ( JString::trim ( $searchword ) );
+	// 		if (empty ( $searchword ))
+	// 			continue;
+	// 		$not = '';
+	// 		$operator = ' OR ';
 
-			if ( substr($searchword, 0, 1) == '-' && strlen($searchword) > 1 ) {
-				$not = 'NOT';
-				$operator = 'AND';
-				$searchword = JString::substr ( $searchword, 1 );
-			}
+	// 		if ( substr($searchword, 0, 1) == '-' && strlen($searchword) > 1 ) {
+	// 			$not = 'NOT';
+	// 			$operator = 'AND';
+	// 			$searchword = JString::substr ( $searchword, 1 );
+	// 		}
 
-			if (!$this->getState('query.titleonly')) {
-				$querystrings [] = "(t.message {$not} LIKE '%{$searchword}%' {$operator} m.subject {$not} LIKE '%{$searchword}%')";
-			} else {
-				$querystrings [] = "(m.subject {$not} LIKE '%{$searchword}%')";
-			}
-		}
+	// 		if (!$this->getState('query.titleonly')) {
+	// 			$querystrings [] = "(t.message {$not} LIKE '%{$searchword}%' {$operator} m.subject {$not} LIKE '%{$searchword}%')";
+	// 		} else {
+	// 			$querystrings [] = "(m.subject {$not} LIKE '%{$searchword}%')";
+	// 		}
+	// 	}
 
-		//User searching
-		$username = $this->getState('query.searchuser');
-		if ($username) {
-			if ($this->getState('query.exactname') == '1') {
-				$querystrings [] = "m.name LIKE '" . $db->escape ( $username ) . "'";
-			} else {
-				$querystrings [] = "m.name LIKE '%" . $db->escape ( $username ) . "%'";
-			}
-		}
+	// 	//User searching
+	// 	$username = $this->getState('query.searchuser');
+	// 	if ($username) {
+	// 		if ($this->getState('query.exactname') == '1') {
+	// 			$querystrings [] = "m.name LIKE '" . $db->escape ( $username ) . "'";
+	// 		} else {
+	// 			$querystrings [] = "m.name LIKE '%" . $db->escape ( $username ) . "%'";
+	// 		}
+	// 	}
 
-		$time = 0;
-		switch ($this->getState('query.searchdate')) {
-			case 'lastvisit' :
-				$time = KunenaFactory::GetSession()->lasttime;
-				break;
-			case 'all' :
-				break;
-			case '1' :
-			case '7' :
-			case '14' :
-			case '30' :
-			case '90' :
-			case '180' :
-			case '365' :
-				$time = time () - 86400 * intval ( $this->getState('query.searchdate') ); //24*3600
-				break;
-			default :
-				$time = time () - 86400 * 365;
-		}
+	// 	$time = 0;
+	// 	switch ($this->getState('query.searchdate')) {
+	// 		case 'lastvisit' :
+	// 			$time = KunenaFactory::GetSession()->lasttime;
+	// 			break;
+	// 		case 'all' :
+	// 			break;
+	// 		case '1' :
+	// 		case '7' :
+	// 		case '14' :
+	// 		case '30' :
+	// 		case '90' :
+	// 		case '180' :
+	// 		case '365' :
+	// 			$time = time () - 86400 * intval ( $this->getState('query.searchdate') ); //24*3600
+	// 			break;
+	// 		default :
+	// 			$time = time () - 86400 * 365;
+	// 	}
 
-		if ($time) {
-			if ($this->getState('query.beforeafter') == 'after') {
-				$querystrings [] = "m.time > '{$time}'";
-			} else {
-				$querystrings [] = "m.time <= '{$time}'";
-			}
-		}
+	// 	if ($time) {
+	// 		if ($this->getState('query.beforeafter') == 'after') {
+	// 			$querystrings [] = "m.time > '{$time}'";
+	// 		} else {
+	// 			$querystrings [] = "m.time <= '{$time}'";
+	// 		}
+	// 	}
 
-		$topic_id = $this->getState('query.topic_id');
-		if ( $topic_id ) {
-			$querystrings [] = "m.id = '{$topic_id}'";
-		}
+	// 	$topic_id = $this->getState('query.topic_id');
+	// 	if ( $topic_id ) {
+	// 		$querystrings [] = "m.id = '{$topic_id}'";
+	// 	}
 
-		return implode ( ' AND ', $querystrings );
-	}
+	// 	return implode ( ' AND ', $querystrings );
+	// }
 
-	protected function buildOrderBy() {
-		if ($this->getState('query.order') == 'dec')
-			$order1 = 'DESC';
-		else
-			$order1 = 'ASC';
-		switch ($this->getState('query.sortby')) {
-			case 'title' :
-				$orderby = "m.subject {$order1}, m.time {$order1}";
-				break;
-			case 'views' :
-				$orderby = "m.hits {$order1}, m.time {$order1}";
-				break;
-			case 'forum' :
-				$orderby = "m.catid {$order1}, m.time {$order1}";
-				break;
-			case 'lastpost' :
-			default :
-				$orderby = "m.time {$order1}";
-		}
+	// protected function buildOrderBy() {
+	// 	if ($this->getState('query.order') == 'dec')
+	// 		$order1 = 'DESC';
+	// 	else
+	// 		$order1 = 'ASC';
+	// 	switch ($this->getState('query.sortby')) {
+	// 		case 'title' :
+	// 			$orderby = "m.subject {$order1}, m.time {$order1}";
+	// 			break;
+	// 		case 'views' :
+	// 			$orderby = "m.hits {$order1}, m.time {$order1}";
+	// 			break;
+	// 		case 'forum' :
+	// 			$orderby = "m.catid {$order1}, m.time {$order1}";
+	// 			break;
+	// 		case 'lastpost' :
+	// 		default :
+	// 			$orderby = "m.time {$order1}";
+	// 	}
 
-		return $orderby;
-	}
+	// 	return $orderby;
+	// }
 
 	public function getUrlParams() {
 		// Turn internal state into URL, but ignore default values

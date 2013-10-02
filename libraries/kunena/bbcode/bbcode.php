@@ -996,6 +996,10 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 			return '[' . ($default ? $default : JText::_ ('COM_KUNENA_BBCODE_SPOILER')) . ']';
 		}
 		$document = JFactory::getDocument();
+
+		jimport('rokcommonjs.rokcommonjs');
+		RokCommonJS::load(array('core.core', 'forum.user.spoiler'));
+
 		if (!($document instanceof JDocumentHTML)) {
 			// Static version
 			return '<div class="kspoiler"><div class="kspoiler-header"><span class="kspoiler-title">' . ($default ? ($default) : (JText::_ ( 'COM_KUNENA_BBCODE_SPOILER' )))
@@ -1659,7 +1663,9 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 
 		// Display tag in activity streams etc..
 		if (!empty($bbcode->parent->forceMinimal)) {
-			return "<a href=\"" . $fileurl . "\" rel=\"nofollow\" target=\"_blank\">" . basename($fileurl) . '</a>';
+			jimport('rokcommonjs.rokcommonjs');
+			RokCommonJS::load(array('core.core', 'core.moofx', 'core.agent', 'ui.modal'));
+			return "aaa<a data-modal href=\"" . $fileurl . "\" rel=\"nofollow\" target=\"_blank\">" . basename($fileurl) . '</a>';
 		}
 
 		$config = KunenaFactory::getConfig();
@@ -1676,7 +1682,9 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 					if (! preg_match ( '`^(/|https?://)`', $fileurl )) {
 						$fileurl = 'http://' . $fileurl;
 					}
-					return "<a href=\"" . $fileurl . "\" rel=\"nofollow\" target=\"_blank\">" . $fileurl . '</a>';
+					jimport('rokcommonjs.rokcommonjs');
+					RokCommonJS::load(array('core.core', 'core.moofx', 'core.agent', 'ui.modal'));
+					return "<a data-modal href=\"" . $fileurl . "\" rel=\"nofollow\" target=\"_blank\">" . $fileurl . '</a>';
 				} else {
 					return $fileurl;
 				}
@@ -1709,7 +1717,9 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 
 		// Need to check if we are nested inside a URL code
 		if ($bbcode->autolink_disable == 0 && $config->lightbox) {
-			return '<div class="kmsgimage"><a href="'.$fileurl.'" title="" rel="lightbox[gallery]"><img src="'.$fileurl.'"'.$width.' style="max-height:'.$config->imageheight.'px;" alt="" /></a></div>';
+			jimport('rokcommonjs.rokcommonjs');
+			RokCommonJS::load(array('core.core', 'core.moofx', 'core.agent', 'ui.modal'));
+			return '<div class="kmsgimage"><a data-modal href="'.$fileurl.'" title=""><img src="'.$fileurl.'"'.$width.' style="max-height:'.$config->imageheight.'px;" alt="" /></a></div>';
 		}
 		return '<div class="kmsgimage"><img src="' . $fileurl .'"'. $width .' style="max-height:'.$config->imageheight.'px;" alt="" /></div>';
 	}
