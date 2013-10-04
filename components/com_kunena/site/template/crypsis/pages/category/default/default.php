@@ -2,7 +2,7 @@
 /**
  * Kunena Component
  * @package Kunena.Template.Crypsis
- * @subpackage Pages.Search
+ * @subpackage Pages.Category
  *
  * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
@@ -15,7 +15,7 @@ $content = $this->execute('Category/Topics');
 // Display breadcrumb path to the current category.
 $parents = KunenaForumCategoryHelper::getParents($content->category->id);
 $parents[] = $content->category;
-foreach ( $parents as $parent ) {
+foreach ($parents as $parent) {
 	$this->addBreadcrumb($parent->displayField('name'), $parent->getUri());
 }
 
