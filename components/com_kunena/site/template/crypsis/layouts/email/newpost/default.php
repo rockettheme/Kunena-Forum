@@ -14,7 +14,7 @@ defined ( '_JEXEC' ) or die ();
 
 $author = $this->message->getAuthor();
 $config = KunenaConfig::getInstance();
-$subject = $this->massage->subject ? $this->message->subject : $this->message->getTopic()->subject;
+$subject = $this->message->subject ? $this->message->subject : $this->message->getTopic()->subject;
 
 $msg1 = $this->message->parent ? JText::_('COM_KUNENA_POST_EMAIL_NOTIFICATION1') : JText::_
 	('COM_KUNENA_POST_EMAIL_NOTIFICATION1_CAT');
