@@ -77,7 +77,7 @@ class KunenaViewTopic extends KunenaView {
 		// If page does not exist, redirect to the last page (no redirect in embedded mode).
 		if (empty($this->embedded) && $this->total && $this->total <= $this->state->get('list.start')) {
 			while (@ob_end_clean());
-			$this->app->redirect($this->topic->getUrl(null, false, (int)($this->total / $this->state->get('list.limit'))));
+			$this->app->redirect($this->topic->getUrl(null, false, (int)(($this->total-1) / $this->state->get('list.limit'))));
 		}
 
 		// Run events
@@ -467,8 +467,8 @@ class KunenaViewTopic extends KunenaView {
 			$this->topic = $this->get ( 'Topic' );
 		}
 		$this->poll = $this->get('Poll');
-		$this->usercount = $this->get('PollUserCount');
 		$this->usersvoted = $this->get('PollUsers');
+		$this->usercount = count($this->usersvoted);
 		$this->voted = $this->get('MyVotes');
 
 		$this->users_voted_list = array();
@@ -491,6 +491,30 @@ class KunenaViewTopic extends KunenaView {
 
 		if ($this->voted || !$this->topic->authorise('poll.vote', null, true)) echo $this->loadTemplateFile("pollresults");
 		else echo $this->loadTemplateFile("poll");
+	}
+
+	function getCodeTypes() {
+		if (!$this->config->highlightcode) return null;
+
+		$paths = array(
+			JPATH_ROOT.'/plugins/content/geshiall/geshi/geshi',
+			JPATH_ROOT.'/plugins/content/geshi/geshi/geshi'
+		);
+		foreach ($paths as $path) {
+			if (!file_exists($path)) continue;
+
+			$files = JFolder::files($path, ".php");
+			$options = array();
+			$options[] = JHTML::_('select.option', '', JText::_('COM_KUNENA_EDITOR_CODE_TYPE'));
+			foreach ($files as $file) {
+				$options[] = JHTML::_('select.option', substr($file,0,-4), substr($file,0,-4));
+			}
+			$javascript = "document.id('helpbox').set('value', '".JText::_('COM_KUNENA_EDITOR_HELPLINE_CODETYPE', true)."')";
+			$list = JHTML::_('select.genericlist', $options, 'kcodetype"', 'class="kbutton" onmouseover="'.$javascript.'"' , 'value', 'text', '-1' );
+
+			return $list;
+		}
+		return null;
 	}
 
 	function displayMessageProfile() {
