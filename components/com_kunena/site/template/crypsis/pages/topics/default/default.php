@@ -10,7 +10,7 @@
  **/
 defined ( '_JEXEC' ) or die ();
 
-$content = $this->execute('Topic/List/Recent');
+$content = $this->execute('Topic/List/Recent')->setLayout('recent');
 
 $this->addBreadcrumb($content->headerText, 'index.php?option=com_kunena&view=topics&layout=default');
 
