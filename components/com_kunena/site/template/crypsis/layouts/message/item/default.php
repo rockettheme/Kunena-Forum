@@ -63,9 +63,10 @@ $this->attachments = $this->message->getAttachments();
 		</div>
 		<?php endif ?>
 		<?php if (!empty($this->reportMessageLink)) :?>
-			<div class="pull-right">
-				<p><?php echo $this->reportMessageLink ?></p>
-
+		    <div class="pull-left">
+			  <p><i class="icon-warning-sign"></i> <?php echo $this->reportMessageLink ?></p>
+				</div>
+				<div class="pull-right">
 				<?php if (!empty($this->ipLink)) : ?>
 				<p><?php echo $this->ipLink ?></p>
 				<?php endif ?>
@@ -74,3 +75,6 @@ $this->attachments = $this->message->getAttachments();
 		<?php endif ?>
 	</div>
 </div>
+<?php echo $this->subLayout('Message/Edit')
+	->set('message', $this->message)
+  ->setLayout('quickreply'); ?>
