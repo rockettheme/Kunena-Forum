@@ -73,7 +73,8 @@ class KunenaLayoutSearchForm extends KunenaLayout
 		echo JHtml::_('select.genericlist',  $options, 'beforeafter', $attributes, 'value', 'text', $this->state->get('query.beforeafter'), $id );
 	}
 
-	public function displaySortByList($id, $attributes = '') {
+	public function displaySortByList($id, $attributes = '')
+	{
 		$options	= array();
 		$options[]	= JHtml::_('select.option',  'title', JText::_('COM_KUNENA_SEARCH_SORTBY_TITLE') );
 //		$options[]	= JHtml::_('select.option',  'replycount', JText::_('COM_KUNENA_SEARCH_SORTBY_POSTS') );

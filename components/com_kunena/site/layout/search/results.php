@@ -18,7 +18,8 @@ defined('_JEXEC') or die;
  */
 class KunenaLayoutSearchResults extends KunenaLayout
 {
-	public function displayRows() {
+	public function displayRows()
+	{
 		// Run events
 		$params = new JRegistry();
 		$params->set('ksource', 'kunena');
@@ -30,7 +31,8 @@ class KunenaLayoutSearchResults extends KunenaLayout
 
 		$dispatcher->trigger('onKunenaPrepare', array ('kunena.messages', &$this->results, &$params, 0));
 
-		foreach ($this->results as $this->message) {
+		foreach ($this->results as $this->message)
+		{
 			$this->topic = $this->message->getTopic();
 			$this->category = $this->message->getCategory();
 			$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
@@ -40,12 +42,15 @@ class KunenaLayoutSearchResults extends KunenaLayout
 			$profile = KunenaFactory::getUser((int)$this->message->userid);
 			$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
 
-			foreach ( $this->searchwords as $searchword ) {
-				if (empty ( $searchword )) continue;
+			foreach ($this->searchwords as $searchword)
+			{
+				if (empty($searchword)) continue;
+
 				$ressubject = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $ressubject );
 				// FIXME: enable highlighting, but only after we can be sure that we do not break html
 				//$resmessage = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $resmessage );
 			}
+
 			$this->author = $this->message->getAuthor();
 			$this->topicAuthor = $this->topic->getAuthor();
 			$this->topicTime = $this->topic->first_post_time;
