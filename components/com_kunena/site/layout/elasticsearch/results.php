@@ -66,7 +66,7 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 				$this->topicTime = $this->topic->first_post_time;
 			}
 
-			$contents = $this->subLayout('Search/Results/Row')->setProperties($this->getProperties());
+			$contents = $this->subLayout('Elasticsearch/Results/Row')->setProperties($this->getProperties());
 			echo $contents;
 		}
 	}

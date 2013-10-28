@@ -89,35 +89,37 @@ class KunenaLayoutElasticsearchForm extends KunenaLayout
 		}
 	}
 
-	public function getSuggestions($suggestion = 'simple_phrase') {
+	// public function getSuggestions($suggestion = 'simple_phrase') {
 
-		if (isset($this->data)) {
-			$results = $this->data->results;
-			$response = $results->getResponse();
-			$datas = $response->getData();
-			if (isset($datas['suggest'][$suggestion][0]['options'])) {
-				$suggest_data = $datas['suggest'][$suggestion][0]['options'];
+	// 	xdebug_break();
 
-				$suggestions = array();
-				foreach ($suggest_data as $suggestion) {
-					$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
-				}
-				return $suggestions;
-			}
-		}
+	// 	if (isset($this->data)) {
+	// 		$results = $this->data->results;
+	// 		$response = $results->getResponse();
+	// 		$datas = $response->getData();
+	// 		if (isset($datas['suggest'][$suggestion][0]['options'])) {
+	// 			$suggest_data = $datas['suggest'][$suggestion][0]['options'];
 
-		return false;
-	}
+	// 			$suggestions = array();
+	// 			foreach ($suggest_data as $suggestion) {
+	// 				$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
+	// 			}
+	// 			return $suggestions;
+	// 		}
+	// 	}
 
-	public function getSuggestUrl($suggestion) {
+	// 	return false;
+	// }
 
-		$uri = JFactory::getURI();
-		$query_string = $uri->getQuery();
+	// public function getSuggestUrl($suggestion) {
 
-		// remove the page element of the query if it is set
-		parse_str($query_string,$query_array);
-		$query_array['q'] = $suggestion;
+	// 	$uri = JFactory::getURI();
+	// 	$query_string = $uri->getQuery();
 
-		return ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
-	}
+	// 	// remove the page element of the query if it is set
+	// 	parse_str($query_string,$query_array);
+	// 	$query_array['q'] = $suggestion;
+
+	// 	return ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
+	// }
 }
