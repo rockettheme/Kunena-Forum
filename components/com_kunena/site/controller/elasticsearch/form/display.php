@@ -2,7 +2,7 @@
 /**
  * Kunena Component
  * @package     Kunena.Site
- * @subpackage  Controller.Search
+ * @subpackage  Controller.Elasticsearch
  *
  * @copyright   (C) 2008 - 2013 Kunena Team. All rights reserved.
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
@@ -11,13 +11,13 @@
 defined('_JEXEC') or die;
 
 /**
- * Class ComponentKunenaControllerSearchResultsDisplay
+ * Class ComponentKunenaControllerElasticsearchFormDisplay
  *
  * @since  3.1
  */
-class ComponentKunenaControllerSearchResultsDisplay extends KunenaControllerDisplay
+class ComponentKunenaControllerElasticsearchFormDisplay extends KunenaControllerDisplay
 {
-	protected $name = 'Search/Results';
+	protected $name = 'Elasticsearch/Form';
 
 	/**
 	 * @var KunenaModelSearch
@@ -25,14 +25,7 @@ class ComponentKunenaControllerSearchResultsDisplay extends KunenaControllerDisp
 	public $model;
 
 	/**
-	 * @var int
-	 */
-	public $total;
-
-	public $data = array();
-
-	/**
-	 * Prepare search results display.
+	 * Prepare search form display.
 	 *
 	 * @return void
 	 */
@@ -40,26 +33,13 @@ class ComponentKunenaControllerSearchResultsDisplay extends KunenaControllerDisp
 	{
 		parent::before();
 
-		require_once KPATH_SITE . '/models/search.php';
-		$this->model = new KunenaModelSearch;
+		require_once KPATH_SITE . '/models/elasticsearch.php';
+		$this->model = new KunenaModelElasticsearch;
 		$this->state = $this->model->getState();
 
 		$this->me = KunenaUserHelper::getMyself();
-		$this->message_ordering = $this->me->getMessageOrdering();
 
-		$this->searchwords = $this->model->getSearchWords();
 		$this->isModerator = ($this->me->isAdmin() || KunenaAccess::getInstance()->getModeratorStatus());
-
-		$this->results = array();
-		$this->total = $this->model->getTotal();
-		$this->results = $this->model->getResults();
-
-		$this->pagination = new KunenaPagination(
-			$this->total,
-			$this->state->get('list.start'),
-			$this->state->get('list.limit')
-		);
-
 		$this->error = $this->model->getError();
 	}
 

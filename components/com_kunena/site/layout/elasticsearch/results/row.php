@@ -2,7 +2,7 @@
 /**
  * Kunena Component
  * @package Kunena.Site
- * @subpackage Layout.Search
+ * @subpackage Layout.Elasticsearch
  *
  * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
@@ -10,7 +10,7 @@
  **/
 defined ( '_JEXEC' ) or die ();
 
-class KunenaLayoutSearchResultsRow extends KunenaLayout
+class KunenaLayoutElasticsearchResultsRow extends KunenaLayout
 {
 
 	public function getTopicUrl($topic) {
