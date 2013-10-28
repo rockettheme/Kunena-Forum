@@ -205,6 +205,9 @@ class KunenaModelSearch extends KunenaModel {
         $search->addIndex('kunena');
 
         try {
+        	if (ElasticsearchHelper::getDebuggable()) {
+                JLog::add('Forum Query: '.json_encode($queryObj->toArray()), JLog::INFO,'elasticsearch');    
+            }
             $resultSet = $search->search($queryObj);
         } catch (Exception $e) {
         	JError::raiseWarning(500, $e->getMessage());
