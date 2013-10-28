@@ -1,64 +1,106 @@
 <?php
 /**
  * Kunena Component
- * @package     Kunena.Site
- * @subpackage  Layout.Search
+ * @package Kunena.Site
+ * @subpackage Layout.Search
  *
- * @copyright   (C) 2008 - 2013 Kunena Team. All rights reserved.
- * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @link        http://www.kunena.org
+ * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
+ * @link http://www.kunena.org
  **/
-defined('_JEXEC') or die;
+defined ( '_JEXEC' ) or die ();
 
-/**
- * KunenaLayoutSearchResults
- *
- * @since  3.1
- *
- */
 class KunenaLayoutSearchResults extends KunenaLayout
 {
-	public function displayRows()
-	{
-		// Run events
-		$params = new JRegistry();
-		$params->set('ksource', 'kunena');
-		$params->set('kunena_view', 'search');
-		$params->set('kunena_layout', 'default');
+	public function processResults() {
 
-		$dispatcher = JDispatcher::getInstance();
-		JPluginHelper::importPlugin('kunena');
+		$this->getSuggestions();
+		$this->start = $this->pagination->limitstart + 1;
+		$this->end = $this->start + $this->pagination->limit - 1;
+		
+	}
 
-		$dispatcher->trigger('onKunenaPrepare', array ('kunena.messages', &$this->results, &$params, 0));
+	public function getTopicUrl($topic) {
+		return $topic->getUrl($topic->getCategory(), true, null);
+	}
 
-		foreach ($this->results as $this->message)
-		{
-			$this->topic = $this->message->getTopic();
-			$this->category = $this->message->getCategory();
-			$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
-			$ressubject = KunenaHtmlParser::parseText ($this->message->subject);
-			$resmessage = KunenaHtmlParser::parseBBCode($this->message->message, 500);
+	public function displayRows() {
+		foreach ($this->data->results as $result) {
 
-			$profile = KunenaFactory::getUser((int)$this->message->userid);
-			$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+			$this->message = KunenaForumMessageHelper::get($result->msgid);
+			$this->score = sprintf("%.1f", $result->getScore() * 10);
 
-			foreach ($this->searchwords as $searchword)
-			{
-				if (empty($searchword)) continue;
+			if ($this->message->subject == null) {
+				$this->empty = true;
+				$this->subjectHtml = $result->subject;
+				if ($result->parent) {
+					$this->subjectHtml = 'Re: '.$this->subjectHtml;
+				}
 
-				$ressubject = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $ressubject );
-				// FIXME: enable highlighting, but only after we can be sure that we do not break html
-				//$resmessage = preg_replace ( "/" . preg_quote ( $searchword, '/' ) . "/iu", '<span  class="searchword" >' . $searchword . '</span>', $resmessage );
+				$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
+
+			} else {
+				$this->empty = false;
+				$highlights = $result->getHighlights();
+
+				$this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
+				if ($this->message->getParent()->id) {
+					$this->subjectHtml = 'Re: '.$this->subjectHtml;
+				}
+				if (isset($highlights['message'])) {
+					$this->messageHtml = implode('... ', $highlights['message']);
+				} else {
+					$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
+				}
+
+				$this->parent = $this->message->getParent()->id;
+				$this->topic = $this->message->getTopic();
+				$this->category = $this->message->getCategory();
+				$this->categoryLink = $this->getCategoryLink($this->category->getParent()) . ' / ' . $this->getCategoryLink($this->category);
+
+				$profile = KunenaFactory::getUser((int)$this->message->userid);
+				$this->useravatar = $profile->getAvatarImage('kavatar', 'post');
+
+				$this->author = $this->message->getAuthor();
+				$this->topicAuthor = $this->topic->getAuthor();
+				$this->topicTime = $this->topic->first_post_time;
 			}
-
-			$this->author = $this->message->getAuthor();
-			$this->topicAuthor = $this->topic->getAuthor();
-			$this->topicTime = $this->topic->first_post_time;
-			$this->subjectHtml = $ressubject;
-			$this->messageHtml = $resmessage;
 
 			$contents = $this->subLayout('Search/Results/Row')->setProperties($this->getProperties());
 			echo $contents;
 		}
+	}
+
+	public static function getUri($params=array()) {
+		$uri = JUri::getInstance();
+
+		foreach($params as $key=>$value) {
+			$uri->setVar($key, $value);
+		}
+
+		return $uri;
+	}
+
+	public function getSuggestions($suggestion = 'simple_phrase') {
+		$this->suggestions = false;
+		if (isset($this->data->results)) {
+			$results = $this->data->results;
+			$response = $results->getResponse();
+			$datas = $response->getData();
+			if (isset($datas['suggest'][$suggestion][0]['options'])) {
+				$suggest_data = $datas['suggest'][$suggestion][0]['options'];
+
+				$suggestions = array();
+				foreach ($suggest_data as $suggestion) {
+					$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
+				}
+				$this->suggestions = $suggestions;
+			}
+		}
+		return;
+	}
+
+	public function getSuggestUrl($suggestion) {
+		return $this->getUri(array('q'=>$suggestion));
 	}
 }
