@@ -1,8 +1,8 @@
 <?php
 /**
  * Kunena Component
- * @package Kunena.Site
- * @subpackage Controllers.Misc
+ * @package Kunena.Framework
+ * @subpackage Controller
  *
  * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
@@ -42,13 +42,15 @@ class KunenaControllerApplicationDisplay extends KunenaControllerDisplay
 	protected $document;
 
 	public function exists() {
-		$this->page = KunenaLayoutPage::factory("{$this->input->getCmd('view')}/{$this->input->getCmd('layout', 'default')}");
+		$name = "{$this->input->getWord('view')}/{$this->input->getWord('layout', 'default')}";
+		$this->page = KunenaLayoutPage::factory($name);
 		return (bool) $this->page->getPath();
 	}
 
 	protected function display() {
 		// Display layout with given parameters.
 		$this->page->set('input', $this->input);
+		$this->page->setLayout($this->input->getWord('layout', 'default'));
 
 		return $this->page;
 	}
@@ -125,7 +127,7 @@ class KunenaControllerApplicationDisplay extends KunenaControllerDisplay
 		KUNENA_PROFILER ? KunenaProfiler::instance()->start('function '.get_class($this).'::'.__FUNCTION__.'()') : null;
 
 		if (!$this->exists()) {
-			throw new RuntimeException("Layout '{$this->input->getCmd('view')}/{$this->input->getCmd('layout', 'default')}' does not exist!", 404);
+			throw new RuntimeException("Layout '{$this->input->getWord('view')}/{$this->input->getWord('layout', 'default')}' does not exist!", 404);
 		}
 
 		// Load language files.
@@ -222,7 +224,7 @@ class KunenaControllerApplicationDisplay extends KunenaControllerDisplay
 		$credits .= ' <a href="http://www.kunena.org" rel="follow"
 			target="_blank" style="display: inline; visibility: visible; text-decoration: none;">'
 			. JText::_('COM_KUNENA').'</a>';
-		if ($templateText) {
+		if (trim($templateText)) {
 			$credits .= ' :: <a href ="'. $templateLink. '" rel="follow" target="_blank" style="text-decoration: none;">'
 				. $templateText .' '. $templateName .'</a>';
 		}

@@ -80,7 +80,7 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 * @internal
 	 */
 	public function __construct($properties = null) {
-		$this->_db = JFactory::getDBO ();
+		$this->_db = JFactory::getDbo();
 		parent::__construct($properties);
 	}
 
@@ -125,6 +125,26 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get published state in text.
+	 *
+	 * @return string
+	 *
+	 * @since 3.1
+	 */
+	public function getState() {
+		switch ($this->hold) {
+			case 0:
+				return 'published';
+			case 1:
+				return 'unapproved';
+			case 2:
+			case 3:
+				return 'deleted';
+		}
+		return 'unknown';
 	}
 
 	/**
@@ -437,6 +457,8 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 * @param KunenaUser $user
 	 *
 	 * @return bool
+	 *
+	 * @since 3.1
 	 */
 	public function isAuthorised($action='read', KunenaUser $user = null) {
 		return !$this->tryAuthorise($action, $user, false);
@@ -452,6 +474,8 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 * @return KunenaExceptionAuthorise|null
 	 * @throws KunenaExceptionAuthorise
 	 * @throws InvalidArgumentException
+	 *
+	 * @since 3.1
 	 */
 	public function tryAuthorise($action='read', KunenaUser $user = null, $throw = true) {
 		// Special case to ignore authorisation.

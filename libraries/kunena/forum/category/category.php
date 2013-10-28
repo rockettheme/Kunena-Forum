@@ -347,6 +347,26 @@ class KunenaForumCategory extends KunenaDatabaseObject {
 	}
 
 	/**
+	 * Get published state in text.
+	 *
+	 * @return string
+	 *
+	 * @since 3.1
+	 */
+	public function getState() {
+		switch ($this->hold) {
+			case 0:
+				return 'published';
+			case 1:
+				return 'unapproved';
+			case 2:
+			case 3:
+				return 'deleted';
+		}
+		return 'unknown';
+	}
+
+	/**
 	 * @return int
 	 */
 	public function getTopics() {
@@ -492,6 +512,8 @@ class KunenaForumCategory extends KunenaDatabaseObject {
 	 * @param KunenaUser $user
 	 *
 	 * @return bool
+	 *
+	 * @since 3.1
 	 */
 	public function isAuthorised($action='read', KunenaUser $user = null) {
 		return !$this->tryAuthorise($action, $user, false);
@@ -507,6 +529,8 @@ class KunenaForumCategory extends KunenaDatabaseObject {
 	 * @return KunenaExceptionAuthorise|null
 	 * @throws KunenaExceptionAuthorise
 	 * @throws InvalidArgumentException
+	 *
+	 * @since 3.1
 	 */
 	public function tryAuthorise($action='read', KunenaUser $user = null, $throw = true) {
 		// Special case to ignore authorisation.

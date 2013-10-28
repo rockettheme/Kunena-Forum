@@ -1,14 +1,14 @@
 <?php
 /**
  * Kunena Component
- * @package Kunena.Template.Crypsis
- * @subpackage Credits
+ * @package     Kunena.Template.Crypsis
+ * @subpackage  Layout.Credits
  *
- * @copyright (C) 2008 - 2013 Kunena Team. All rights reserved.
- * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @link http://www.kunena.org
+ * @copyright   (C) 2008 - 2013 Kunena Team. All rights reserved.
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
+ * @link        http://www.kunena.org
  **/
-defined ( '_JEXEC' ) or die ();
+defined('_JEXEC') or die;
 ?>
 
 <h2>
@@ -41,7 +41,7 @@ defined ( '_JEXEC' ) or die ();
 
 	<p>
 		<?php echo JText::_('COM_KUNENA_CREDITS_GO_BACK'); ?>
-		<a href="javascript: history.go(-1)" title="<?php echo JText::_('COM_KUNENA_CREDITS_GO_BACK'); ?>">
+		<a href="javascript:window.history.back()" title="<?php echo JText::_('COM_KUNENA_CREDITS_GO_BACK'); ?>">
 			<?php echo JText::_('COM_KUNENA_USER_RETURN_B'); ?>
 		</a>
 	</p>

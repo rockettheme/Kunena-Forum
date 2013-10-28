@@ -229,6 +229,7 @@ class KunenaLayoutBase extends KunenaCompatLayoutBase
 	 * @return  string  The output of the the template file.
 	 *
 	 * @throws  Exception
+	 * @deprecated
 	 */
 	public function loadTemplate($tpl = null)
 	{
@@ -497,9 +498,9 @@ class KunenaLayoutBase extends KunenaCompatLayoutBase
 	 * @param   $path
 	 * @return  KunenaControllerDisplay
 	 */
-	public function subRequest($path)
+	public function subRequest($path, Jinput $input = null)
 	{
-		return KunenaRequest::factory($path.'/Display')->set('layout', $this->getLayout());
+		return KunenaRequest::factory($path.'/Display', $input)->set('layout', $this->getLayout());
 	}
 
 	/**

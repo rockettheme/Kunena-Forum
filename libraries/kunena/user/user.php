@@ -118,6 +118,75 @@ class KunenaUser extends JObject {
 	}
 
 	/**
+	 * Returns true if user is authorised to do the action.
+	 *
+	 * @param string     $action
+	 * @param KunenaUser $user
+	 *
+	 * @return bool
+	 *
+	 * @since 3.1
+	 */
+	public function isAuthorised($action='read', KunenaUser $user = null) {
+		return !$this->tryAuthorise($action, $user, false);
+	}
+
+	/**
+	 * Throws an exception if user isn't authorised to do the action.
+	 *
+	 * @param string      $action
+	 * @param KunenaUser  $user
+	 * @param bool        $throw
+	 *
+	 * @return KunenaExceptionAuthorise|null
+	 * @throws KunenaExceptionAuthorise
+	 * @throws InvalidArgumentException
+	 *
+	 * @since 3.1
+	 */
+	public function tryAuthorise($action='read', KunenaUser $user = null, $throw = true) {
+		// Special case to ignore authorisation.
+		if ($action == 'none') {
+			return null;
+		}
+
+		// Load user if not given.
+		if ($user === null) {
+			$user = KunenaUserHelper::getMyself();
+		}
+
+		$config = KunenaConfig::getInstance();
+		$exception = null;
+
+		switch ($action) {
+			case 'read' :
+				if (!isset($this->registerDate) || (!$user->exists() && !$config->pubprofile))
+				{
+					$exception = new KunenaExceptionAuthorise(JText::_('COM_KUNENA_PROFILEPAGE_NOT_ALLOWED_FOR_GUESTS'), 403);
+				}
+				break;
+			case 'edit' :
+				if (!isset($this->registerDate) || !$this->isMyself())
+				{
+					$exception = new KunenaExceptionAuthorise(JText::sprintf('COM_KUNENA_VIEW_USER_EDIT_AUTH_FAILED', $this->getName()), 403);
+				}
+				break;
+			case 'ban' :
+				$banInfo = KunenaUserBan::getInstanceByUserid($this->userid, true);
+				if (!$banInfo->canBan()) {
+					$exception =  new KunenaExceptionAuthorise($banInfo->getError(), 403);
+				}
+				break;
+			default :
+				throw new InvalidArgumentException(JText::sprintf('COM_KUNENA_LIB_AUTHORISE_INVALID_ACTION', $action), 500);
+		}
+
+		// Throw or return the exception.
+		if ($throw && $exception) throw $exception;
+		return $exception;
+	}
+
+	/**
 	 * Method to get the user table object.
 	 *
 	 * @param	string	$type	The user table name to be used.
@@ -367,10 +436,11 @@ class KunenaUser extends JObject {
 	 * @param null|string   $title
 	 * @param string $rel
 	 * @param string $task
+	 * @param string $class
 	 *
 	 * @return string
 	 */
-	public function getLink($name = null, $title = null, $rel = 'nofollow', $task = '') {
+	public function getLink($name = null, $title = null, $rel = 'nofollow', $task = '', $class = null) {
 		if (!$name) {
 			$name = $this->getName();
 		}
@@ -379,13 +449,14 @@ class KunenaUser extends JObject {
 			if (!$title) {
 				$title = JText::sprintf('COM_KUNENA_VIEW_USER_LINK_TITLE', $this->getName());
 			}
-			$uclass = $this->getType(0, 'class');
+			$class = !is_null($class) ? $class : $this->getType(0, 'class');
 			$link = $this->getURL (true, $task);
 			if (! empty ( $link ))
-				$this->_link[$key] = "<a class=\"{$uclass}\" href=\"{$link}\" title=\"{$title}\" rel=\"{$rel}\">{$name}</a>";
+				$this->_link[$key] = "<a class=\"{$class}\" href=\"{$link}\" title=\"{$title}\" rel=\"{$rel}\">{$name}</a>";
 			else
-				$this->_link[$key] = "<span class=\"{$uclass}\">{$name}</span>";
+				$this->_link[$key] = "<span class=\"{$class}\">{$name}</span>";
 		}
+
 		return $this->_link[$key];
 	}
 
@@ -536,6 +607,70 @@ class KunenaUser extends JObject {
 	}
 
 	/**
+	 * Return local time for the user.
+	 *
+	 * @return KunenaDate  User time instance.
+	 */
+	public function getTime()
+	{
+		static $time;
+
+		if (!isset($time))
+		{
+			$timezone = JFactory::getApplication()->getCfg('offset', null);
+
+			if ($this->userid)
+			{
+				$user = JUser::getInstance($this->userid);
+				$timezone = $user->getParam('timezone', $timezone);
+			}
+
+			$time = new KunenaDate('now', $timezone);
+
+			try
+			{
+				$offset = new DateTimeZone($timezone);
+				$time->setTimezone($offset);
+			}
+			catch (Exception $e)
+			{
+				// TODO: log error?
+			}
+		}
+
+		return $time;
+	}
+
+	/**
+	 * Return registration date.
+	 *
+	 * @return KunenaDate
+	 */
+	public function getRegisterDate()
+	{
+		return KunenaDate::getInstance($this->registerDate);
+	}
+
+	/**
+	 * Return last visit date.
+	 *
+	 * @return KunenaDate
+	 */
+	public function getLastVisitDate()
+	{
+		if (!$this->lastvisitDate || $this->lastvisitDate == "0000-00-00 00:00:00")
+		{
+			$date = KunenaDate::getInstance($this->registerDate);
+		}
+		else
+		{
+			$date = KunenaDate::getInstance($this->lastvisitDate);
+		}
+
+		return $date;
+	}
+
+	/**
 	 * @param null|string $layout
 	 *
 	 * @return string
@@ -561,14 +696,29 @@ class KunenaUser extends JObject {
 	 * @param string $layout
 	 */
 	public function setTopicLayout( $layout = 'default' ) {
-		if ($layout != 'default') $layout = $this->getTopicLayout( $layout );
+		if ($layout != 'default') $layout = $this->getTopicLayout($layout);
 
-		$this->_app->setUserState ( 'com_kunena.topic_layout', $layout );
+		$this->_app->setUserState ('com_kunena.topic_layout', $layout);
 
-		if ($this->userid) {
+		if ($this->userid && $this->view != $layout) {
 			$this->view = $layout;
 			$this->save(true);
 		}
+	}
+
+	/**
+	 * Render user signature.
+	 *
+	 * @return string
+	 *
+	 * @since 3.1
+	 */
+	public function getSignature() {
+		static $html;
+		if (!isset($html)) {
+			$html = KunenaHtmlParser::parseBBCode($this->signature, $this, KunenaConfig::getInstance()->maxsig);
+		}
+		return $html;
 	}
 
 	/**
