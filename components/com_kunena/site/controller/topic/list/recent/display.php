@@ -31,7 +31,9 @@ class ComponentKunenaControllerTopicListRecentDisplay extends ComponentKunenaCon
 			->set('topics', $this->topics)
 			->set('headerText', $this->headerText)
 			->set('pagination', $this->pagination)
-			->set('state', $this->state);
+			->set('state', $this->state)
+			->set('topicActions', $this->topicActions)
+			->set('actionMove', $this->actionMove);
 
 		return $content;
 	}
@@ -46,7 +48,8 @@ class ComponentKunenaControllerTopicListRecentDisplay extends ComponentKunenaCon
 		parent::before();
 
 		require_once KPATH_SITE . '/models/topics.php';
-		$this->model = new KunenaModelTopics;
+		$this->model = new KunenaModelTopics(array(), $this->input);
+		$this->model->initialize($this->options, $this->options->get('embedded', false));
 		$this->state = $this->model->getState();
 		$this->me = KunenaUserHelper::getMyself();
 
@@ -164,5 +167,8 @@ class ComponentKunenaControllerTopicListRecentDisplay extends ComponentKunenaCon
 			default :
 				$this->headerText = JText::_('COM_KUNENA_VIEW_TOPICS_DEFAULT_MODE_DEFAULT');
 		}
+
+		$this->topicActions = $this->model->getTopicActions();
+		$this->actionMove = $this->model->getActionMove();
 	}
 }
