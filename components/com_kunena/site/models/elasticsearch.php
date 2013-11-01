@@ -139,34 +139,63 @@ class KunenaModelElasticsearch extends KunenaModel {
 
         // Keyword searching
         if ($q) {
+        	$query = new Elastica\Query\FunctionScore();
 
-    		$query = new Elastica\Query\MultiMatch();
-	        $query->setQuery($q);
+	        $dateScale = '180d';
+	        $dateOffset = '180d';
+	        $dateDecay = '0.4';
+
+	        // Add boosting algorithms
+	        $query->setParam('functions', [
+	        	[
+	        		'boost_factor' => 2,
+	        		'gauss' => [
+	        			'created' => [
+		        			'scale' => $dateScale,
+		        			'offset' => $dateOffset,
+		        			'decay' => $dateDecay
+		        		]
+	        		]
+	        	],
+	        	[
+	        		'boost_factor' => 2.2,
+	        		'filter' => [
+	        			'term' => [
+	        				'parent' => 0
+	        			]
+	        		]
+	        	]
+	        ]);
+
+        	$childQuery = new Elastica\Query\MultiMatch();
+	        $childQuery->setQuery($q);
 
 	        $searchtype = $this->getState('query.searchtype');
 
 	        switch ($searchtype) {
 	        	case 1:		// Titles only
-	        		$query->setFields(array('subject'));
+	        		$childQuery->setFields(array('subject'));
 	        		break;
 	        	case 2:		// Messages only
-	        		$query->setFields(array('message'));
+	        		$childQuery->setFields(array('message'));
 	        		break;  
 	        	case 3:		// First topic only
 	        		$topicFilter = new Elastica\Filter\Term();
         			$topicFilter->setTerm('parent',0);
         			$this->filters->addFilter($topicFilter);
-        			$query->setFields(array('subject','message'));
+        			$childQuery->setFields(array('subject','message'));
 	        		break;
 	        	default:	// Title + Message
-	        		$query->setFields(array('subject','message'));	
+	        		$childQuery->setFields(array('subject','message'));	
 	        		break;
 	        }
+
+	        $query->setQuery($childQuery);
+	        
+
         } else {
         	$query = new Elastica\Query\MatchAll();
         }
-
-        // Add filtering
 
         // put it all together
         $queryObj = new Elastica\Query($query);

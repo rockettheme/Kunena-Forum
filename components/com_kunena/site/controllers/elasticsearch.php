@@ -15,7 +15,7 @@ defined ( '_JEXEC' ) or die ();
  *
  * @since		2.0
  */
-class KunenaControllerSearch extends KunenaController {
+class KunenaControllerElasticsearch extends KunenaController {
 	public function __construct($config = array()) {
 		parent::__construct($config);
 	}
