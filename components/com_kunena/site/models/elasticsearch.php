@@ -141,15 +141,29 @@ class KunenaModelElasticsearch extends KunenaModel {
         if ($q) {
         	$query = new Elastica\Query\FunctionScore();
 
-	        $dateScale = '180d';
-	        $dateOffset = '180d';
-	        $dateDecay = '0.4';
+        	//$query->setScoreMode('sum');
+
+	        $dateScale = '365d';
+	        $dateOffset = '15d';
+	        $dateDecay = '0.1';
+
+	        $query->setParam('score_mode', 'sum');
+	        $query->setParam('boost_mode', 'sum');
+	        $query->setParam('max_boost', '5');
 
 	        // Add boosting algorithms
 	        $query->setParam('functions', [
 	        	[
 	        		'boost_factor' => 2,
-	        		'gauss' => [
+	        		'filter' => [
+	        			'term' => [
+	        				'parent' => 0
+	        			]
+	        		]
+	        	],
+	        	[
+	        		'boost_factor' => 2,
+	        		'linear' => [
 	        			'created' => [
 		        			'scale' => $dateScale,
 		        			'offset' => $dateOffset,
@@ -158,14 +172,12 @@ class KunenaModelElasticsearch extends KunenaModel {
 	        		]
 	        	],
 	        	[
-	        		'boost_factor' => 2.2,
-	        		'filter' => [
-	        			'term' => [
-	        				'parent' => 0
-	        			]
+	        		'boost_factor' => 2,
+	        		'script_score' => [
+	        			'script' => "_score * doc['thankyous'].value / 2"
 	        		]
 	        	]
-	        ]);
+ 	        ]);
 
         	$childQuery = new Elastica\Query\MultiMatch();
 	        $childQuery->setQuery($q);

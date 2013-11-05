@@ -172,7 +172,7 @@ class KunenaUpload extends JObject {
 		ob_start();
 		$error = $this->getError();
 		if ($error) {
-			jexit('{"error" : '.$error.'", "id" : "id"}');
+			jexit('{"error" : "'.$error.'", "id" : "id"}');
 		}
 		jexit('{"success" : true, "id" : "id"}');
 	}
