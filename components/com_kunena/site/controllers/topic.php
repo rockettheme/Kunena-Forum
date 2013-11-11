@@ -24,9 +24,112 @@ class KunenaControllerTopic extends KunenaController {
 		$this->mesid = JRequest::getInt('mesid', 0);
 	}
 
+	/**
+	 * Upload files with AJAX.
+	 *
+	 * @throws RuntimeException
+	 */
 	public function upload() {
+		// Only support JSON requests.
+		if ($this->input->getWord('format', 'html') != 'json')
+		{
+			throw new RuntimeException(JText::_('Bad Request'), 400);
+		}
+
 		$upload = KunenaUpload::getInstance();
-		$upload->ajaxUpload();
+
+		// We are converting all exceptions into JSON.
+		try
+		{
+			if (!JSession::checkToken('request'))
+			{
+				throw new RuntimeException(JText::_('Forbidden'), 403);
+			}
+
+			$me = KunenaUserHelper::getMyself();
+			$catid = $this->input->getInt('catid', 0);
+			$mesid = $this->input->getInt('mesid', 0);
+
+			if ($mesid)
+			{
+				$message = KunenaForumMessageHelper::get($mesid);
+				$message->tryAuthorise('attachment.create');
+				$category = $message->getCategory();
+			}
+			else
+			{
+				$category = KunenaForumCategoryHelper::get($catid);
+				// TODO: Some room for improvements in here... (maybe ask user to pick up category first)
+				if ($category->id) $category->tryAuthorise('topic.post.attachment.create');
+			}
+
+			$caption = $this->input->getString('caption');
+			$options = array(
+				'filename' => $this->input->getString('filename'),
+				'size' => $this->input->getInt('size'),
+				'mime' => $this->input->getString('mime'),
+				'hash' => $this->input->getString('hash'),
+				'chunkStart' => $this->input->getInt('chunkStart', 0),
+				'chunkEnd' => $this->input->getInt('chunkEnd', 0),
+			);
+
+			// Upload!
+			$upload->addExtensions(KunenaForumMessageAttachmentHelper::getExtensions($category->id, $me->userid));
+			$response = (object) $upload->ajaxUpload($options);
+
+			if (!empty($response->completed))
+			{
+				// We have it all, lets create the attachment.
+				$uploadFile = $upload->getProtectedFile();
+				list($basename, $extension) = $upload->splitFilename();
+
+				// FIXME: Resize images if they are too large!
+
+				$attachment = new KunenaForumMessageAttachment;
+				$attachment->bind(
+					array(
+						'mesid' => 0,
+						'userid' => (int) $me->userid,
+						'protected' => null,
+						'hash' => $response->hash,
+						'size' => $response->size,
+						'folder' => null,
+						'filetype' => $response->mime,
+						'filename' => null,
+						'filename_real' => $response->filename,
+						'caption' => $caption,
+					)
+				);
+				$attachment->saveFile($uploadFile, $basename, $extension, true);
+
+				// Set id and override response variables just in case if attachment was modified.
+				$response->id = $attachment->id;
+				$response->hash = $attachment->hash;
+				$response->size = $attachment->size;
+				$response->mime = $attachment->filetype;
+				$response->filename = $attachment->filename_real;
+
+				// FIXME: attachment needs to be bound to the message when posting!
+			}
+		}
+		catch (Exception $response)
+		{
+			$upload->cleanup();
+
+			// Use the exception as the response.
+		}
+
+		header('Content-type: application/json');
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+
+		while(@ob_end_clean());
+
+		echo $upload->ajaxResponse($response);
+		jexit();
 	}
 
 	public function post() {
