@@ -135,12 +135,13 @@ class KunenaBbcodeEditor {
 	 * @param string $identifier
 	 */
 	public function initialize($identifier='class') {
-		$js = "window.addEvent('domready', function() {
+		/*$js = "window.addEvent('domready', function() {
 	kbbcode = new kbbcode('kbbcode-message', 'kbbcode-toolbar', {
 		dispatchChangeEvent: true,
 		changeEventDelay: 1000,
 		interceptTab: true
-});\n";
+});\n";*/
+		$js = 'rokcommonjs.ready(function(){';
 		$xml_file = simplexml_load_file(dirname(__FILE__).'/editor.xml');
 
 		$this->editor_elements = self::parseXML($xml_file);
@@ -156,7 +157,7 @@ class KunenaBbcodeEditor {
 
 		$js .= "});\n";
 		$template = KunenaTemplate::getInstance();
-		$template->addScript('editor.js');
+		//$template->addScript('editor.js');
 		JFactory::getDocument()->addScriptDeclaration( "// <![CDATA[\n{$js}\n// ]]>");
 	}
 
@@ -285,7 +286,7 @@ class KunenaBbcodeEditorButton extends KunenaBbcodeEditorElement {
 					if ($action['selection']) {
 						$js .= "\n	sel = this.focus().getSelection(); if (sel) { document.id('{$action['selection']}').set('value', sel); }";
 					}
-					$js .= "\n	kToggleOrSwap('kbbcode-{$name}-options');";
+					$js .= "\n	rokcommonjs.KBBCode.toggleOrSwap('#kbbcode-{$name}-options');";
 
 					break;
 				case 'wrap-selection':
@@ -320,18 +321,18 @@ class KunenaBbcodeEditorButton extends KunenaBbcodeEditorElement {
 		// <button tag="i" name="italic" title="COM_KUNENA_EDITOR_ITALIC" alt="COM_KUNENA_EDITOR_HELPLINE_ITALIC">
 		$name = $this->name ? $this->name : ($this->tag ? $this->tag : '#');
 		$class = $this->class ? $this->class : "kbbcode-{$name}-button";
-		$js = "\nkbbcode.addFunction('{$name}', function() {";
+		$js = "\nrokcommonjs.KBBCode.addAction('{$name}', function() {";
 		$js .= $this->editorActionJs($name);
 		$js .= "\n}, {";
 
 		foreach (array('title', 'alt') as $type) {
 			if ($this->$type) {
 				$value = JText::_($this->$type, true);
-				$js .= "\n	'{$type}': '{$value}',";
+				$js .= "'{$type}': '{$value}', ";
 			}
 		}
 
-		$js .= "\n	'{$identifier}': '{$class}'";
+		$js .= "'{$identifier}': '{$class}'";
 		$js .= "\n});\n";
 
 		return $js;
@@ -398,7 +399,7 @@ class KunenaBbcodeEditorButton extends KunenaBbcodeEditorElement {
  */
 class KunenaBbcodeEditorSeparator extends KunenaBbcodeEditorElement {
 	public function generateJs ($identifier) {
-		$js = "\nkbbcode.addFunction('#', function() {";
+		$js = "\nrokcommonjs.KBBCode.addAction('#', function() {";
 		$js .= "\n}, {";
 		$js .= "\n	'class': 'kbbcode-separator'";
 		$js .= "});\n";

@@ -154,6 +154,63 @@ class KunenaControllerTopic extends KunenaController {
 		jexit();
 	}
 
+	protected function postPrivate(KunenaForumMessage $message) {
+		if (!$this->me->userid) return;
+
+		$body = JRequest::getVar('private', null, 'POST', 'string', JREQUEST_ALLOWRAW);
+		if (!trim($body)) return;
+
+		$forum = array(
+			'category_id' => $message->catid,
+			'topic_id' => $message->thread,
+			'message_id' => $message->id
+		);
+		$user = $message->getParent()->userid;
+
+		$receivers = array('posts' => array((int) $message->id));
+		if ($user) $receivers['users'] = array((int) $user);
+
+		$private = new KunenaPrivateMessage;
+		$private->author_id = $message->userid;
+		$private->subject = $message->subject;
+		$private->body = $body;
+		$private->params = json_encode(array('receivers' => $receivers));
+		$private->save();
+
+		$toForum = new KunenaPrivateMessageToForum;
+		$toForum->private_id = $private->id;
+		$toForum->bind($forum);
+		$toForum->save();
+
+		if ($user) {
+			$toUser = new KunenaPrivateMessageToUser;
+			$toUser->private_id = $private->id;
+			$toUser->user_id = $user;
+			$toUser->save();
+		}
+	}
+
+	protected function editPrivate(KunenaForumMessage $message) {
+		if (!$this->me->userid) return;
+
+		$body = JRequest::getVar('private', null, 'POST', 'string', JREQUEST_ALLOWRAW);
+
+		$finder = new KunenaPrivateMessageFinder;
+		$finder
+			->filterByMessage($message)
+			->where('parent_id', '=', 0)
+			->where('author_id', '=', $message->userid)
+			->order('id')
+			->limit(1);
+		$private = $finder->firstOrNew();
+
+		if (trim($body) == trim($private->body)) return;
+
+		$private->subject = $message->subject;
+		$private->body = $body;
+		$private->save();
+
+	}
 	public function post() {
 		$this->id = JRequest::getInt('parentid', 0);
 		$fields = array (
@@ -348,6 +405,9 @@ class KunenaControllerTopic extends KunenaController {
 		} else {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_POST_SUCCESS_POSTED' ) );
 		}
+
+		$this->postPrivate($message);
+
 		$category = KunenaForumCategoryHelper::get($this->return);
 		if ($message->authorise('read', null, false)) {
 			$this->setRedirect ( $message->getUrl($category, false) );
@@ -505,6 +565,8 @@ class KunenaControllerTopic extends KunenaController {
 
 		// Update Tags
 		$this->updateTags($message->thread, $fields['tags'], $fields['mytags']);
+
+		$this->editPrivate($message);
 
 		$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_POST_SUCCESS_EDIT' ) );
 		if ($message->hold == 1) {

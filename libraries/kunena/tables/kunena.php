@@ -191,11 +191,7 @@ abstract class KunenaTable extends JTable {
 	/**
 	 * Updates a row in a table based on an object's properties.
 	 *
-	 * @param   boolean  $nulls    True to update null fields or false to ignore them.
-	 *
-	 * @return  boolean  True on success.
-	 *
-	 * @throws  RuntimeException
+	 * @param [type] $updateNulls
 	 */
 	public function updateObject($nulls = false)
 	{

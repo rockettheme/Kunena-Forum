@@ -127,6 +127,8 @@ class ComponentKunenaControllerTopicFormCreateDisplay extends KunenaControllerDi
 			$this->poll = $this->topic->getPoll();
 		}
 
+		$this->privateMessage = new KunenaPrivateMessage;
+
 		$this->post_anonymous = $saved ? $saved['anonymous'] : ! empty ( $this->category->post_anonymous );
 		$this->subscriptionschecked = $saved ? $saved['subscribe'] : $this->config->subscriptionschecked == 1;
 		$this->app->setUserState('com_kunena.postfields', null);

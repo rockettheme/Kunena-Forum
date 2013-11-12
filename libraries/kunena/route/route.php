@@ -442,26 +442,112 @@ abstract class KunenaRoute {
 	}
 
 	public static function getCategoryUrl(KunenaForumCategory $category, $xhtml = true) {
-		return KunenaRoute::_("index.php?option=com_kunena&view=category&catid={$category->id}", $xhtml);
+		static $uri = null;
+
+		if (!$uri) {
+			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$uri = JRoute::_("index.php?option=com_kunena&view=category&catid=@&Itemid={$itemid}", false);
+		}
+		$url = sprintf($uri, $category->alias);
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
 
 	public static function getTopicUrl(KunenaForumTopic $topic, $xhtml = true, $action = null,
 	                                   KunenaForumCategory $category = null) {
+		static $uris = null;
+		static $toMessage = null;
+
+		if (!$uris) {
+			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$uris = array();
+			$uris['first'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
+			$uris['start'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&start=@&Itemid={$itemid}", false);
+			$uris['mesid'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&mesid=@&Itemid={$itemid}", false);
+			$uris['unread'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&layout=unread&Itemid={$itemid}", false);
+			$toMessage = KunenaUserHelper::getMyself()->getTopicLayout() == 'threaded';
+		}
+
 		if (!$category) $category = $topic->getCategory();
-		return KunenaRoute::_($topic->getUri($category, $action), $xhtml);
+		$start = 0;
+		$fragment = '';
+		$id = $topic->id;
+		$subject = self::stringURLSafe($topic->subject);
+
+		$uri = $uris['first'];
+		if ($action !== null) {
+			$mesid = 0;
+			$limit = max(1, intval(KunenaFactory::getConfig()->messages_per_page));
+			if ($action instanceof KunenaForumMessage) {
+				$mesid = $action->id;
+			} elseif ((string)$action === (string)(int)$action) {
+				if ($action > 0) {
+					$start = $action * $limit;
+				}
+			} else {
+				switch ($action) {
+					case 'first':
+						$mesid = $topic->first_post_id;
+						break;
+					case 'last':
+						$mesid = $topic->last_post_id;
+						break;
+					case 'unread':
+						$uri = $uris['unread'];
+						break;
+				}
+			}
+			if ($mesid) {
+				if ($toMessage) {
+					$uri = $uris['mesid'];
+					$start = $mesid;
+				} else {
+					$uri = $uris['start'];
+					$start = intval($topic->getPostLocation($mesid) / $limit) * $limit;
+					$fragment = "#{$mesid}";
+				}
+			}
+		}
+
+		$url = sprintf($uri, $category->alias, ($subject ? "{$id}-{$subject}" : $id), $start) . $fragment;
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
 
 	public static function getMessageUrl(KunenaForumMessage $message, $xhtml = true,
-	                                     KunenaForumTopic $topic = null,
-	                                     KunenaForumCategory $category = null) {
-		// FIXME: not yet fully implemented...
+	                                     KunenaForumTopic $topic = null, KunenaForumCategory $category = null) {
+		static $uri = null;
+
+		if (!$uri) {
+			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$uri = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
+		}
+
 		if (!$category) $category = $message->getCategory();
-		if (!$topic) $topic = $message->getTopic();
-		return KunenaRoute::_("index.php?option=com_kunena&view=topic&catid={$category->id}&id={$topic->id}", $xhtml);
+		if (!$topic) $topic = $message->getCategory();
+
+		$id = $topic->id;
+		$subject = self::stringURLSafe($topic->subject);
+
+		$url = sprintf($uri, $category->alias, $subject ? "{$id}-{$subject}" : $id);
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
 
 	public static function getUserUrl(KunenaUser $user, $xhtml = true) {
-		return KunenaRoute::_("index.php?option=com_kunena&view=user&userid={$user->userid}", $xhtml);
+		static $uri = null;
+
+		if (!$uri) {
+			$uri = 'index.php?option=com_kunena&view=user&userid=@';
+			$itemid = self::getItemID($uri);
+			$uri = JRoute::_("{$uri}&Itemid={$itemid}", false);
+		}
+		$id = $user->userid;
+		$username = self::stringURLSafe($user->getName());
+
+		$url = sprintf($uri, $username ? "{$id}-{$username}" : $id);
+
+		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
 
 	protected static function setItemID(JUri $uri) {

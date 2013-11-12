@@ -333,6 +333,45 @@ CREATE TABLE IF NOT EXISTS `#__kunena_users_banned` (
 	KEY `expiration` (expiration),
 	KEY `created_time` (created_time) ) DEFAULT CHARACTER SET utf8;
 
+CREATE TABLE IF NOT EXISTS `#__kunena_private` (
+	`id` int(11) NOT NULL auto_increment,
+	`parent_id` int(11) NOT NULL default '0',
+	`author_id` int(11) NOT NULL default '0',
+	`created_at` datetime NOT NULL,
+	`attachments` tinyint(4) NOT NULL default '0',
+	`subject` tinytext NOT NULL,
+	`body` text NOT NULL,
+	`params` text NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `parent_id` (`parent_id`),
+	KEY `author_id` (`author_id`),
+	KEY `created_at` (`created_at`)
+) DEFAULT CHARACTER SET utf8;
+
+CREATE TABLE IF NOT EXISTS `#__kunena_private_to_forum` (
+	`id` int(11) NOT NULL auto_increment,
+	`private_id` int(11) NOT NULL,
+	`category_id` int(11) NOT NULL default '0',
+	`topic_id` int(11) NOT NULL default '0',
+	`message_id` int(11) NOT NULL default '0',
+	`params` text NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `category_id` (`category_id`),
+	KEY `topic_id` (`topic_id`),
+	KEY `message_id` (`message_id`)
+) DEFAULT CHARACTER SET utf8;
+
+CREATE TABLE IF NOT EXISTS `#__kunena_private_to_user` (
+	`id` int(11) NOT NULL auto_increment,
+	`private_id` int(11) NOT NULL,
+	`user_id` int(11) NOT NULL default '0',
+	`read_at` datetime NOT NULL,
+	`replied_at` datetime NOT NULL,
+	`deleted_at` datetime NOT NULL,
+	PRIMARY KEY (`id`),
+	KEY `user_id` (`user_id`)
+) DEFAULT CHARACTER SET utf8;
+
 CREATE TABLE IF NOT EXISTS `#__kunena_version` (
 	`id` int(11) NOT NULL auto_increment,
 	`version` varchar(20) NOT NULL,

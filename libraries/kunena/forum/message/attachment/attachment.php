@@ -620,7 +620,7 @@ class KunenaForumMessageAttachment extends JObject {
 	 *
 	 * @return string
 	 */
-	protected function _getAttachementLink($path, $name, $title = '', $rel = 'nofollow') {
-		return '<a href="'.$path.'" title="'.$title.'" rel="'.$rel.'">'.$name.'</a>';
+	protected function _getAttachementLink($link, $name, $title = '', $rel = 'nofollow') {
+		return '<a href="'.$link.'" title="'.$title.'" rel="'.$rel.'">'.$name.'</a>';
 	}
 }
