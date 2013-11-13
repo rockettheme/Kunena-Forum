@@ -22,14 +22,36 @@ defined ( '_JEXEC' ) or die ();
  * @property string $body
  * @property string $params
  */
-class KunenaPrivateMessage extends KunenaDatabaseObject {
+class KunenaPrivateMessage extends KunenaDatabaseObject
+{
 	protected $_table = 'KunenaPrivate';
 
-	public function __construct($properties = null) {
-		if (!empty($this->id)) {
+	public function __construct($properties = null)
+	{
+		if (!empty($this->id))
+		{
 			$this->_exists = true;
-		} else {
+		}
+		else
+		{
 			parent::__construct($properties);
 		}
+	}
+
+	/**
+	 * @param string $field
+	 *
+	 * @return int|string
+	 */
+	public function displayField($field) {
+		switch ($field) {
+			case 'id':
+				return intval($this->id);
+			case 'subject':
+				return KunenaHtmlParser::parseText($this->subject);
+			case 'body':
+				return KunenaHtmlParser::parseBBCode($this->body, $this);
+		}
+		return '';
 	}
 }
