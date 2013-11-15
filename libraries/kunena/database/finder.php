@@ -41,6 +41,8 @@ abstract class KunenaDatabaseFinder
 
 	protected $limit = 20;
 
+	protected $skip = false;
+
 	/**
 	 * Constructor.
 	 */
@@ -158,6 +160,11 @@ abstract class KunenaDatabaseFinder
 	 */
 	public function find()
 	{
+		if ($this->skip)
+		{
+			return array();
+		}
+
 		$query = clone $this->query;
 		$this->build($query);
 		$query->select('a.' . $this->primaryKey);

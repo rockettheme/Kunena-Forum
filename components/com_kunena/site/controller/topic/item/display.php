@@ -49,7 +49,7 @@ class ComponentKunenaControllerTopicItemDisplay extends KunenaControllerDisplay
 	 *
 	 * @return void
 	 *
-	 * @throws KunenaForumAuthorise
+	 * @throws KunenaExceptionAuthorise
 	 */
 	protected function before()
 	{
@@ -143,8 +143,7 @@ class ComponentKunenaControllerTopicItemDisplay extends KunenaControllerDisplay
 
 			foreach ($pms as $pm)
 			{
-				$pm->params = json_decode($pm->params);
-				$posts = $pm->params->receivers->posts;
+				$posts = $pm->params->get('receivers.posts');
 
 				foreach ($posts as $post)
 				{

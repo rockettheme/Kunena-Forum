@@ -11,15 +11,11 @@
 defined ( '_JEXEC' ) or die ();
 
 /**
- * Private message receiver: user.
+ * Private message mapping to forum message.
  *
- * @property int $id
  * @property int $private_id
- * @property int $user_id
- * @property string $read_at
- * @property string $replied_at
- * @property string $deleted_at
+ * @property int $message_id
  */
-class KunenaPrivateMessageToUser extends KunenaDatabaseObject {
-	protected $_table = 'KunenaPrivateToUser';
+class KunenaPrivateMessagePost extends KunenaDatabaseObject {
+	protected $_table = 'KunenaPrivatePostMap';
 }

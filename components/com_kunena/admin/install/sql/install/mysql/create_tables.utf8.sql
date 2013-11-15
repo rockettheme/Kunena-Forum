@@ -348,27 +348,27 @@ CREATE TABLE IF NOT EXISTS `#__kunena_private` (
 	KEY `created_at` (`created_at`)
 ) DEFAULT CHARACTER SET utf8;
 
-CREATE TABLE IF NOT EXISTS `#__kunena_private_to_forum` (
-	`id` int(11) NOT NULL auto_increment,
+CREATE TABLE IF NOT EXISTS `#__kunena_private_attachment_map` (
 	`private_id` int(11) NOT NULL,
-	`category_id` int(11) NOT NULL default '0',
-	`topic_id` int(11) NOT NULL default '0',
-	`message_id` int(11) NOT NULL default '0',
-	`params` text NOT NULL,
-	PRIMARY KEY (`id`),
-	KEY `category_id` (`category_id`),
-	KEY `topic_id` (`topic_id`),
+	`attachment_id` int(11) NOT NULL,
+	PRIMARY KEY (`private_id`,`attachment_id`),
+	KEY `attachment_id` (`attachment_id`)
+) DEFAULT CHARACTER SET utf8;
+
+CREATE TABLE IF NOT EXISTS `#__kunena_private_post_map` (
+	`private_id` int(11) NOT NULL,
+	`message_id` int(11) NOT NULL,
+	PRIMARY KEY (`private_id`,`message_id`),
 	KEY `message_id` (`message_id`)
 ) DEFAULT CHARACTER SET utf8;
 
-CREATE TABLE IF NOT EXISTS `#__kunena_private_to_user` (
-	`id` int(11) NOT NULL auto_increment,
+CREATE TABLE IF NOT EXISTS `#__kunena_private_user_map` (
 	`private_id` int(11) NOT NULL,
-	`user_id` int(11) NOT NULL default '0',
+	`user_id` int(11) NOT NULL,
 	`read_at` datetime NOT NULL,
 	`replied_at` datetime NOT NULL,
 	`deleted_at` datetime NOT NULL,
-	PRIMARY KEY (`id`),
+	PRIMARY KEY (`private_id`,`user_id`),
 	KEY `user_id` (`user_id`)
 ) DEFAULT CHARACTER SET utf8;
 

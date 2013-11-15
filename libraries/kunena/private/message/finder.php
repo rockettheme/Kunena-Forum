@@ -19,26 +19,30 @@ class KunenaPrivateMessageFinder extends KunenaDatabaseFinder
 
 	public function filterByUser(KunenaUser $user)
 	{
-		$this->query->innerJoin('#__kunena_private_to_user AS tou ON a.id=tou.private_id');
-		$this->query->where(
-			"(tou.user_id = {$this->db->quote($user->userid)} OR a.author_id = {$this->db->quote($user->userid)})"
-		);
-
-		return $this;
-	}
-
-	public function filterByTopic(KunenaForumTopic $topic)
-	{
-		$this->query->innerJoin('#__kunena_private_to_forum AS tot ON a.id=tot.private_id');
-		$this->query->where("tot.topic_id = {$this->db->quote($topic->id)}");
+		if (!$user->userid)
+		{
+			$this->skip = true;
+		}
+		else
+		{
+			$this->query->innerJoin('#__kunena_private_user_map AS um ON a.id=um.private_id');
+			$this->query->where("um.user_id = {$this->db->quote($user->userid)}");
+		}
 
 		return $this;
 	}
 
 	public function filterByMessage(KunenaForumMessage $message)
 	{
-		$this->query->innerJoin('#__kunena_private_to_forum AS tom ON a.id=tom.private_id');
-		$this->query->where("tom.message_id = {$this->db->quote($message->id)}");
+		if (!$message->id)
+		{
+			$this->skip = true;
+		}
+		else
+		{
+			$this->query->innerJoin('#__kunena_private_post_map AS pm ON a.id=pm.private_id');
+			$this->query->where("pm.message_id = {$this->db->quote($message->id)}");
+		}
 
 		return $this;
 	}
@@ -47,12 +51,12 @@ class KunenaPrivateMessageFinder extends KunenaDatabaseFinder
 	{
 		if (empty($ids))
 		{
-			$this->query->where(0);
+			$this->skip = true;
 		}
 		else
 		{
-			$this->query->innerJoin('#__kunena_private_to_forum AS tom ON a.id=tom.private_id');
-			$this->query->where("tom.message_id IN (".implode(',', $ids).")");
+			$this->query->innerJoin('#__kunena_private_post_map AS pm ON a.id=pm.private_id');
+			$this->query->where("pm.message_id IN (".implode(',', $ids).")");
 		}
 
 		return $this;

@@ -60,8 +60,8 @@ class ComponentKunenaControllerTopicFormEditDisplay extends KunenaControllerDisp
 
 		$this->action = 'edit';
 
-		// Get attachments.
-		$this->attachments = $this->message->getAttachments();
+		// Get attachments (also private ones).
+		$this->attachments = $this->message->getAttachments(false, 'none');
 
 		// Get poll.
 		if ($this->message->parent == 0

@@ -415,6 +415,8 @@
 
 		</version>
 		<version version="@kunenaversion@" versiondate="@kunenaversiondate@" versionname="@kunenaversionname@">
+			<query>DROP TABLE IF EXISTS `#__kunena_private_to_forums`</query>
+			<query>DROP TABLE IF EXISTS `#__kunena_private_to_users`</query>
 		 </version>
 	</upgrade>
 </comupgrade>
