@@ -26,6 +26,20 @@ defined ( '_JEXEC' ) or die ();
  * @property string $caption
  */
 class KunenaForumMessageAttachment extends JObject {
+	// Higher protection level means that the attachment is visible to less people.
+	// Protection level can be checked as bitmask: PROTECTION_ACL + PROTECTION_FRIENDS.
+	// To filter out attachments when doing a database query, you can use:
+	// Visible for author = value < PROTECTION_AUTHOR * 2
+	const PROTECTION_NONE = 0;
+	const PROTECTION_PUBLIC = 1;
+	const PROTECTION_ACL = 2;
+	const PROTECTION_FRIENDS = 4;
+	const PROTECTION_MODERATORS = 8;
+	const PROTECTION_ADMINS = 16;
+	const PROTECTION_PRIVATE = 32;
+	const PROTECTION_AUTHOR = 64;
+	const PROTECTION_UNPUBLISHED = 128;
+
 	protected $_exists = false;
 	protected $_db = null;
 	protected $_shortname = null;
@@ -347,7 +361,7 @@ class KunenaForumMessageAttachment extends JObject {
 		// Hash, size and MIME are set during saving, so let's deal with all other variables.
 		$this->userid = is_null($this->userid) ? KunenaUserHelper::getMyself() : $this->userid;
 		$this->folder = is_null($this->folder) ? "media/kunena/attachments/{$this->userid}" : $this->folder;
-		$this->protected = is_null($this->protected) ? (bool) KunenaConfig::getInstance()->attachment_protection : $this->protected;
+		$this->protected = is_null($this->protected) ? (KunenaConfig::getInstance()->attachment_protection ? static::PROTECTION_AUTHOR : static::PROTECTION_NONE) : $this->protected;
 
 		if (!$this->filename_real)
 		{
@@ -582,6 +596,10 @@ class KunenaForumMessageAttachment extends JObject {
 		// Checks if attachment exists
 		if (!$this->exists()) {
 			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 404);
+		}
+		// Only authorise Public and ACL controlled attachments.
+		if ($this->protected >= static::PROTECTION_ACL * 2) {
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
 		}
 		// FIXME: authorisation for guests is missing, but needs a few changes in the code in order to work.
 		/*

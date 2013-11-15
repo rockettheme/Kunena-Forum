@@ -157,43 +157,38 @@ class KunenaControllerTopic extends KunenaController {
 	protected function postPrivate(KunenaForumMessage $message) {
 		if (!$this->me->userid) return;
 
-		$body = JRequest::getVar('private', null, 'POST', 'string', JREQUEST_ALLOWRAW);
-		if (!trim($body)) return;
+		$body = (string) $this->input->getRaw('private');
+		$attachIds = $this->input->get('attachment_private', array(), 'array');
+		if (!trim($body) && !$attachIds) return;
 
-		$forum = array(
-			'category_id' => $message->catid,
-			'topic_id' => $message->thread,
-			'message_id' => $message->id
-		);
-		$user = $message->getParent()->userid;
-
-		$receivers = array('posts' => array((int) $message->id));
-		if ($user) $receivers['users'] = array((int) $user);
+		$moderator = $this->me->isModerator($message->getCategory());
+		$parent = $message->getParent();
+		$author = $message->getAuthor();
+		$pAuthor = $parent->getAuthor();
 
 		$private = new KunenaPrivateMessage;
-		$private->author_id = $message->userid;
+		$private->author_id = $author->userid;
 		$private->subject = $message->subject;
 		$private->body = $body;
-		$private->params = json_encode(array('receivers' => $receivers));
-		$private->save();
-
-		$toForum = new KunenaPrivateMessageToForum;
-		$toForum->private_id = $private->id;
-		$toForum->bind($forum);
-		$toForum->save();
-
-		if ($user) {
-			$toUser = new KunenaPrivateMessageToUser;
-			$toUser->private_id = $private->id;
-			$toUser->user_id = $user;
-			$toUser->save();
+		// Attach message.
+		$private->posts()->add($message->id);
+		// Attach author of the message.
+		if ($author->exists()) $private->users()->add($author->userid);
+		if ($pAuthor->exists() && ($moderator || $pAuthor->isModerator($message->getCategory()))) {
+			// Attach receiver (but only if moderator either posted or replied parent post).
+			if ($pAuthor->exists()) $private->users()->add($pAuthor->userid);
+		}
+		$private->attachments()->setMapped($attachIds);
+		if (!$private->save()) {
+			$this->app->enqueueMessage($private->getError(), 'notice');
 		}
 	}
 
 	protected function editPrivate(KunenaForumMessage $message) {
 		if (!$this->me->userid) return;
 
-		$body = JRequest::getVar('private', null, 'POST', 'string', JREQUEST_ALLOWRAW);
+		$body = (string) $this->input->getRaw('private');
+		$attachIds = $this->input->get('attachment_private', array(), 'array');
 
 		$finder = new KunenaPrivateMessageFinder;
 		$finder
@@ -204,13 +199,24 @@ class KunenaControllerTopic extends KunenaController {
 			->limit(1);
 		$private = $finder->firstOrNew();
 
-		if (trim($body) == trim($private->body)) return;
+		if (!$private->exists()) {
+			$this->postPrivate($message);
+			return;
+		}
 
 		$private->subject = $message->subject;
 		$private->body = $body;
-		$private->save();
 
+		$private->attachments()->setMapped($attachIds);
+		$private->check();
+		if (!$private->body && !$private->attachments) {
+			$private->delete();
+		}
+		if (!$private->save()) {
+			$this->app->enqueueMessage($private->getError(), 'notice');
+		}
 	}
+
 	public function post() {
 		$this->id = JRequest::getInt('parentid', 0);
 		$fields = array (
@@ -312,8 +318,16 @@ class KunenaControllerTopic extends KunenaController {
 		// Mark attachments to be added or deleted.
 		$attachments = JRequest::getVar ( 'attachments', array(), 'post', 'array' );
 		$attachment = JRequest::getVar ( 'attachment', array(), 'post', 'array' );
-		$message->addAttachments(array_keys(array_intersect_key($attachments, $attachment)));
-		$message->removeAttachments(array_keys(array_diff_key($attachments, $attachment)));
+		$attachment_private = JRequest::getVar ( 'attachment_private', array(), 'post', 'array' );
+		$message->addAttachments(
+			array_keys(array_intersect_key($attachments, $attachment)),
+			KunenaForumMessageAttachment::PROTECTION_PUBLIC
+		);
+		$message->addAttachments(
+			array_keys(array_intersect_key($attachments, $attachment_private)),
+			KunenaForumMessageAttachment::PROTECTION_PRIVATE
+		);
+		$message->removeAttachments(array_keys(array_diff_key($attachments, $attachment + $attachment_private)));
 
 		// Upload new attachments
 		foreach ($_FILES as $key=>$file) {
@@ -465,8 +479,16 @@ class KunenaControllerTopic extends KunenaController {
 		// Mark attachments to be added or deleted.
 		$attachments = JRequest::getVar ( 'attachments', array(), 'post', 'array' );
 		$attachment = JRequest::getVar ( 'attachment', array(), 'post', 'array' );
-		$message->addAttachments(array_keys(array_intersect_key($attachments, $attachment)));
-		$message->removeAttachments(array_keys(array_diff_key($attachments, $attachment)));
+		$attachment_private = JRequest::getVar ( 'attachment_private', array(), 'post', 'array' );
+		$message->addAttachments(
+			array_keys(array_intersect_key($attachments, $attachment)),
+			KunenaForumMessageAttachment::PROTECTION_PUBLIC
+		);
+		$message->addAttachments(
+			array_keys(array_intersect_key($attachments, $attachment_private)),
+			KunenaForumMessageAttachment::PROTECTION_PRIVATE
+		);
+		$message->removeAttachments(array_keys(array_diff_key($attachments, $attachment + $attachment_private)));
 
 		// Upload new attachments
 		foreach ($_FILES as $key=>$file) {

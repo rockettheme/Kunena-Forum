@@ -371,26 +371,25 @@
 		<key name="author_id" columns="author_id"/>
 		<key name="created_at" columns="created_at"/>
 	</table>
-	<table name="kunena_private_to_forum">
-		<field primary_key="yes" name="id" type="int(11)" null="0" extra="auto_increment"/>
-		<field name="private_id" type="int(11)" null="0"/>
-		<field name="category_id" type="int(11)" null="0" default="0"/>
-		<field name="topic_id" type="int(11)" null="0" default="0"/>
-		<field name="message_id" type="int(11)" null="0" default="0"/>
-		<field name="params" type="text" null="0"/>
-		<key name="PRIMARY" unique="1" columns="id"/>
-		<key name="category_id" columns="category_id"/>
-		<key name="topic_id" columns="topic_id"/>
+	<table name="kunena_private_attachment_map">
+		<field primary_key="yes" name="private_id" type="int(11)" null="0"/>
+		<field primary_key="yes" name="attachment_id" type="int(11)" null="0"/>
+		<key name="PRIMARY" unique="1" columns="private_id,attachment_id"/>
+		<key name="attachment_id" columns="attachment_id"/>
+	</table>
+	<table name="kunena_private_post_map">
+		<field primary_key="yes" name="private_id" type="int(11)" null="0"/>
+		<field primary_key="yes" name="message_id" type="int(11)" null="0"/>
+		<key name="PRIMARY" unique="1" columns="private_id,message_id"/>
 		<key name="message_id" columns="message_id"/>
 	</table>
-	<table name="kunena_private_to_user">
-		<field primary_key="yes" name="id" type="int(11)" null="0" extra="auto_increment"/>
-		<field name="private_id" type="int(11)" null="0"/>
-		<field name="user_id" type="int(11)" null="0" default="0"/>
+	<table name="kunena_private_user_map">
+		<field primary_key="yes" name="private_id" type="int(11)" null="0"/>
+		<field primary_key="yes" name="user_id" type="int(11)" null="0"/>
 		<field name="read_at" type="datetime" null="0"/>
 		<field name="replied_at" type="datetime" null="0"/>
 		<field name="deleted_at" type="datetime" null="0"/>
-		<key name="PRIMARY" unique="1" columns="id"/>
+		<key name="PRIMARY" unique="1" columns="private_id,user_id"/>
 		<key name="user_id" columns="user_id"/>
 	</table>
 	<table name="kunena_version">

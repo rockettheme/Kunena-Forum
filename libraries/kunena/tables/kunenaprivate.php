@@ -39,11 +39,16 @@ class TableKunenaPrivate extends KunenaTable {
 		$this->subject = trim($this->subject);
 		if (!$this->subject)
 		{
+			// TODO: translate
 			$this->setError(JText::sprintf('COM_KUNENA_LIB_TABLE_PRIVATE_ERROR_NO_SUBJECT'));
 		}
-		if (!$this->body)
+		if (!$this->body && !$this->attachments)
 		{
+			// TODO: translate
 			$this->setError(JText::sprintf('COM_KUNENA_LIB_TABLE_PRIVATE_ERROR_NO_BODY'));
+		}
+		if ($this->params instanceof JRegistry) {
+			$this->params = $this->params->toString();
 		}
 
 		return ($this->getError() == '');

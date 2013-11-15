@@ -606,11 +606,21 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 * Currently only orphan attachments can be added.
 	 *
 	 * @param array $ids
+	 * @param int   $protection
 	 * @since 3.1
 	 */
-	public function addAttachments(array $ids)
+	public function addAttachments(array $ids, $protection = null)
 	{
-		$this->_attachments_add += $this->getAttachments($ids, 'none');
+		$protection = ($protection ? $protection : KunenaForumMessageAttachment::PROTECTION_PUBLIC);
+
+		$attachments = new KunenaCollection($this->getAttachments($ids, 'none'));
+		$attachments->each(
+			function (KunenaForumMessageAttachment $item) use ($protection)
+			{
+				$item->protected = $protection;
+			}
+		);
+		$this->_attachments_add += $attachments->all();
 	}
 
 	/**
@@ -651,7 +661,7 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 */
 	public function getAttachments($ids=false, $action = 'read') {
 		if ($ids === false) {
-			return KunenaForumMessageAttachmentHelper::getByMessage($this->id, $action);
+			$attachments = KunenaForumMessageAttachmentHelper::getByMessage($this->id, $action);
 		} else {
 			$attachments = KunenaForumMessageAttachmentHelper::getById($ids, $action);
 			foreach ($attachments as $id=>$attachment) {
@@ -659,8 +669,8 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 					unset($attachments[$id]);
 				}
 			}
-			return $attachments;
 		}
+		return $attachments;
 	}
 
 	/**
@@ -671,7 +681,11 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 		$message = $this->message;
 		foreach ($this->_attachments_add as $tmpid=>$attachment) {
 			if ($attachment->exists() && $attachment->mesid) {
-				// Attachment exists and already belongs to a message => skip it.
+				// Attachment exists and already belongs to a message => update.
+				if (!$attachment->save()) {
+					$this->setError($attachment->getError());
+					continue;
+				}
 				continue;
 			}
 			$attachment->mesid = $this->id;
