@@ -1477,6 +1477,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 		}
 
 		$type = isset ( $params ["type"] ) ? $params ["type"] : "php";
+		$type = isset($default) ? $default : "php";
 		if ($type == 'js') {
 			$type = 'javascript';
 		} elseif ($type == 'html') {
@@ -1501,7 +1502,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 			$code = $geshi->parse_code ();
 		} else {
 			$type = preg_replace('/[^A-Z0-9_\.-]/i', '', $type);
-			$code = '<pre xml:'.$type.'>'.$content.'</pre>';
+			$code = '<pre class="prettyprint '.$type.'">'.$content.'</pre>';
 		}
 		return '<div class="highlight">'.$code.'</div>';
 	}
