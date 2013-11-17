@@ -1478,11 +1478,9 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 
 		$type = isset ( $params ["type"] ) ? $params ["type"] : "php";
 		$type = isset($default) ? $default : "php";
-		if ($type == 'js') {
-			$type = 'javascript';
-		} elseif ($type == 'html') {
-			$type = 'html4strict';
-		}
+
+		if ($type == 'less' || $type == 'scss' || $type == 'sass') $type = 'css';
+
 		$highlight = KunenaFactory::getConfig()->highlightcode && empty($bbcode->parent->forceMinimal);
 		if ($highlight && !class_exists('GeSHi')) {
 			$paths = array(
@@ -1502,7 +1500,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 			$code = $geshi->parse_code ();
 		} else {
 			$type = preg_replace('/[^A-Z0-9_\.-]/i', '', $type);
-			$code = '<pre class="prettyprint '.$type.'">'.$content.'</pre>';
+			$code = '<pre class="prettyprint linenums lang-'.$type.'">'.$content.'</pre>';
 		}
 		return '<div class="highlight">'.$code.'</div>';
 	}
