@@ -208,7 +208,7 @@ class KunenaTableMap
 	 */
 	public function getMapped()
 	{
-		return $this->{$this->_tbl_mapped};
+		return (array) $this->{$this->_tbl_mapped};
 	}
 
 	/**
