@@ -1488,7 +1488,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 				JPATH_ROOT.'/plugins/content/geshi/geshi/geshi.php'
 			);
 			foreach ($paths as $path) {
-				if (!class_exists('GeSHi') && file_exists($path)) {
+				if (!class_exists('GeSHi') && is_file($path)) {
 					require_once $path;
 				}
 			}
@@ -1849,7 +1849,6 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 			// Hide between content from non registered users
 			return '<b>' . JText::_ ( 'COM_KUNENA_SHOWIMGFORGUEST_HIDEFILE' ) . '</b>';
 		} else {
-			jimport ( 'joomla.filesystem.file' );
 			// Make sure that filename does not contain path or URL
 			$filename = basename(! empty ( $params ["name"] ) ? $params ["name"] : trim(strip_tags($content)));
 
