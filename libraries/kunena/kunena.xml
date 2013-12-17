@@ -16,6 +16,7 @@
         <folder>activity</folder>
 		<folder>bbcode</folder>
 		<folder>cache</folder>
+        <folder>collection</folder>
 		<folder>compat</folder>
 		<folder>controller</folder>
 		<folder>database</folder>
@@ -34,6 +35,7 @@
 		<folder>module</folder>
 		<folder>pagination</folder>
 		<folder>path</folder>
+        <folder>private</folder>
 		<folder>request</folder>
 		<folder>route</folder>
 		<folder>spam</folder>
