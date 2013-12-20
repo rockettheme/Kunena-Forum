@@ -127,8 +127,9 @@ abstract class KunenaUserHelper {
 			$userlist = implode ( ',', $e_userids );
 
 			$db = JFactory::getDBO ();
-			$query = "SELECT u.name, u.username, u.email, u.block as blocked, u.registerDate, u.lastvisitDate, ku.*, u.id AS userid
+			$query = "SELECT u.name, u.username, u.email, u.block as blocked, u.registerDate, u.lastvisitDate, cl.bioMap as bioMap, ku.*, u.id AS userid
 				FROM #__users AS u
+				LEFT JOIN #__rokclub_users AS cl ON u.id = cl.id
 				LEFT JOIN #__kunena_users AS ku ON u.id = ku.userid
 				WHERE u.id IN ({$userlist})";
 			$db->setQuery ( $query );
