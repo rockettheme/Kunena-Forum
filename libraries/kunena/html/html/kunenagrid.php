@@ -146,7 +146,7 @@ abstract class JHtmlKunenaGrid
 			return '';
 		}
 		else {
-			return '<input type="checkbox" id="cb'.$rowNum.'" name="'.$name.'[]" value="'.$recId.'" onclick="Joomla.isChecked(this.checked);" title="'.JText::sprintf('COM_KUNENA_LIB_CHECKBOX_ROW_N', ($rowNum + 1)).'" />';
+			return '<input type="checkbox" id="cb'.$rowNum.'" name="'.$name.'[]" value="'.$recId.'" title="'.JText::sprintf('COM_KUNENA_LIB_CHECKBOX_ROW_N', ($rowNum + 1)).'" />';
 		}
 	}
 
