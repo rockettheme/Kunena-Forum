@@ -43,7 +43,6 @@ class KunenaProfile
 	{
 		$config = KunenaFactory::getConfig ();
 		$my = JFactory::getUser();
-		xdebug_break();
 		if ( $config->statslink_allowed == 0 && $my->id == 0  ) return false;
 		return KunenaRoute::_('index.php?option=com_kunena&view=statistics'.$action, $xhtml);
 	}
