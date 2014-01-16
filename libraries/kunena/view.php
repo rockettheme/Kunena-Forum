@@ -383,8 +383,10 @@ class KunenaView extends JViewLegacy {
 	}
 
 	public function displayStatistics() {
-		if (KunenaFactory::getConfig()->showstats > 0) {
-			echo $this->common->display('statistics');
+		if (KunenaFactory::getConfig()->showstats > 0 && (KunenaFactory::getConfig()->showstats_to_guests > 0 && KunenaUserHelper::get()->exists())) {
+			if (KunenaFactory::getConfig()->showstats_to_guests || (!KunenaFactory::getConfig()->showstats_to_guests && KunenaUserHelper::get()->exists())) {
+				echo $this->common->display('statistics');
+			}
 		}
 	}
 
@@ -553,7 +555,7 @@ class KunenaView extends JViewLegacy {
 	public function setDescription($description) {
 		if ($this->inLayout) throw new LogicException(sprintf('HMVC template should not call %s::%s()', __CLASS__, __FUNCTION__));
 
-		if (!$this->state->get('embedded')) 
+		if (!$this->state->get('embedded'))
 		{
 			// TODO: allow translations/overrides
 			$lang = JFactory::getLanguage();

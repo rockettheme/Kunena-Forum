@@ -38,7 +38,7 @@ class ComponentKunenaControllerPageStatisticsDisplay extends KunenaControllerDis
 
 		$this->config = KunenaConfig::getInstance();
 
-		if (!$this->config->get('showstats'))
+		if (!$this->config->get('showstats') || (!$this->config->get('showstats_to_guests') && !KunenaUserHelper::get()->exists()))
 		{
 			return false;
 		}
