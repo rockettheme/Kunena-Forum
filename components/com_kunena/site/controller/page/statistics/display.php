@@ -47,9 +47,6 @@ class ComponentKunenaControllerPageStatisticsDisplay extends KunenaControllerDis
 		$statistics->loadGeneral();
 		$this->setProperties($statistics);
 
-		$me = KunenaUserHelper::getMyself();
-		$moderator = intval($me->isModerator()) + intval($me->isAdmin());
-
 		$this->latestMemberLink = KunenaFactory::getUser(intval($this->lastUserId))->getLink();
 		$this->statisticsUrl = KunenaFactory::getProfile()->getStatisticsURL();
 		$this->userlistUrl = KunenaFactory::getProfile()->getUserListUrl();
