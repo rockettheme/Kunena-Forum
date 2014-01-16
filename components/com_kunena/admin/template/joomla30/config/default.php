@@ -1152,6 +1152,11 @@ if (version_compare(JVERSION, '3.2', '>'))
 												<td><?php echo JText::_('COM_KUNENA_SHOWSTATSDESC') ?></td>
 											</tr>
 											<tr>
+												<td><?php echo JText::_('COM_KUNENA_SHOWSTATS_TO_GUESTS') ?></td>
+												<td><?php echo $this->lists ['showstats_to_guests'] ?></td>
+												<td><?php echo JText::_('COM_KUNENA_SHOWSTATS_TO_GUESTSDESC') ?></td>
+											</tr>
+											<tr>
 												<td><?php echo JText::_('COM_KUNENA_STATSGENERAL') ?></td>
 												<td><?php echo $this->lists ['showgenstats'] ?></td>
 												<td><?php echo JText::_('COM_KUNENA_STATSGENERALDESC') ?></td>
