@@ -146,6 +146,7 @@ class KunenaAdminModelConfig extends KunenaModel {
 		$lists ['allowavatarupload'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_allowavatarupload', 'class="inputbox" size="1"', 'value', 'text', $this->config->allowavatarupload );
 		$lists ['allowavatargallery'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_allowavatargallery', 'class="inputbox" size="1"', 'value', 'text', $this->config->allowavatargallery );
 		$lists ['showstats'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_showstats', 'class="inputbox" size="1"', 'value', 'text', $this->config->showstats );
+		$lists ['showstats_to_guests'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_showstats_to_guests', 'class="inputbox" size="1"', 'value', 'text', $this->config->showstats_to_guests );
 		$lists ['showranking'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_showranking', 'class="inputbox" size="1"', 'value', 'text', $this->config->showranking );
 		$lists ['rankimages'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_rankimages', 'class="inputbox" size="1"', 'value', 'text', $this->config->rankimages );
 		$lists ['username'] = JHtml::_ ( 'select.genericlist', $yesno, 'cfg_username', 'class="inputbox" size="1"', 'value', 'text', $this->config->username );
