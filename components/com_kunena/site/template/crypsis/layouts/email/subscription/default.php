@@ -10,15 +10,24 @@
  **/
 defined('_JEXEC') or die;
 
-// New post email for moderators (plain text)
+// New post email for subscribers (HTML)
 
+$this->mail->isHtml(true);
+
+$author = $this->message->getAuthor();
 $config = KunenaConfig::getInstance();
 $subject = $this->message->subject ? $this->message->subject : $this->message->getTopic()->subject;
-$author = $this->message->getAuthor();
-// New post email for subscribers (HTML)
-?>
 
-<h2><?php echo JText::_('COM_KUNENA_POST_EMAIL_MOD1') . " " . $config->board_title; ?></h2>
+$msg1 = $this->message->parent ? JText::_('COM_KUNENA_POST_EMAIL_NOTIFICATION1') : JText::_
+	('COM_KUNENA_POST_EMAIL_NOTIFICATION1_CAT');
+$msg2 = $this->message->parent ? JText::_('COM_KUNENA_POST_EMAIL_NOTIFICATION2') : JText::_
+	('COM_KUNENA_POST_EMAIL_NOTIFICATION2_CAT');
+$more = ($this->once ?
+	JText::_($this->message->parent? 'COM_KUNENA_POST_EMAIL_NOTIFICATION_MORE_READ' :
+		'COM_KUNENA_POST_EMAIL_NOTIFICATION_MORE_SUBSCRIBE'). "\n" : '');
+
+?>
+<h2><?php echo $msg1 . " " . $config->board_title; ?></h2>
 
 <div><?php echo JText::_('COM_KUNENA_MESSAGE_SUBJECT') . " : " . $subject; ?></div>
 <div><?php echo JText::_('COM_KUNENA_CATEGORY') . " : " . $this->message->getCategory()->name; ?></div>
@@ -31,11 +40,12 @@ $author = $this->message->getAuthor();
 <div><?php echo $this->message->displayField('message'); ?></div>
 <hr />
 <?php endif; ?>
-<div><?php echo JText::_('COM_KUNENA_POST_EMAIL_MOD2'); ?></div>
-
+<div><?php echo $msg2; ?></div>
+<?php if ($more) : ?>
+<div><?php echo $more; ?></div>
+<?php endif; ?>
 <div><?php echo JText::_('COM_KUNENA_POST_EMAIL_NOTIFICATION3'); ?></div>
 
------=====-----
 <?php
 // Email as plain text:
 
@@ -47,8 +57,8 @@ $full = !$config->mailfull ? '' : <<<EOS
 
 EOS;
 
-$text = <<<EOS
-{$this->text('COM_KUNENA_POST_EMAIL_MOD1')} {$config->board_title}
+$alt = <<<EOS
+{$msg1} {$config->board_title}
 
 {$this->text('COM_KUNENA_MESSAGE_SUBJECT')} : {$subject}
 {$this->text('COM_KUNENA_CATEGORY')} : {$this->message->getCategory()->name}
@@ -56,8 +66,8 @@ $text = <<<EOS
 
 URL : {$this->messageUrl}
 
-{$full}{$this->text('COM_KUNENA_POST_EMAIL_MOD2')}{$more}
+{$full}{$msg2}{$more}
 
 {$this->text('COM_KUNENA_POST_EMAIL_NOTIFICATION3')}
 EOS;
-echo $text;
+$this->mail->AltBody = $alt;
