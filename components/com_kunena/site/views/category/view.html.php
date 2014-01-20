@@ -138,13 +138,13 @@ class KunenaViewCategory extends KunenaView {
 		$this->render('Category/Edit', $tpl);
 	}
 
-	function getLastPostLink($category, $content = null, $title = null, $class = null) {
+	function getLastPostLink($category, $content = null, $title = null, $class = null, $length = 20) {
 		$lastTopic = $category->getLastTopic();
 		$channels = $category->getChannels();
 		if (!isset($channels[$lastTopic->category_id])) $category = $lastTopic->getCategory();
 		$uri = $lastTopic->getUri($category, 'last');
 
-		if (!$content) $content = KunenaHtmlParser::parseText($category->getLastTopic()->subject, 20);
+		if (!$content) $content = KunenaHtmlParser::parseText($category->getLastTopic()->subject, $length);
 		if ($title === null) $title = JText::sprintf('COM_KUNENA_TOPIC_LAST_LINK_TITLE', $this->escape($category->getLastTopic()->subject));
 		return JHtml::_('kunenaforum.link', $uri, $content, $title, $class, 'nofollow');
 	}
