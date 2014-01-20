@@ -242,6 +242,9 @@ class KunenaControllerTopic extends KunenaController {
 			return;
 		}
 
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
+
 		$captcha = KunenaSpamRecaptcha::getInstance();
 		if ($captcha->enabled()) {
 			$success = $captcha->verify();
@@ -465,6 +468,9 @@ class KunenaControllerTopic extends KunenaController {
 			$this->setRedirectBack();
 			return;
 		}
+
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
 
 		// Update message contents
 		$message->edit ( $fields );
@@ -915,6 +921,9 @@ class KunenaControllerTopic extends KunenaController {
 			return;
 		}
 
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
+
 		if ($this->mesid) {
 			// Approve message
 			$target = KunenaForumMessageHelper::get($this->mesid);
@@ -1052,6 +1061,9 @@ class KunenaControllerTopic extends KunenaController {
 
 		$reason = JRequest::getString ( 'reason' );
 		$text = JRequest::getString ( 'text' );
+
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
 
 		if (empty ( $reason ) && empty ( $text )) {
 			// Do nothing: empty subject or reason is empty
