@@ -43,13 +43,12 @@ $colspan = empty($this->actions) ? 5 : 6;
 		</tr>
 
 		<?php else : ?>
-		
 		<?php if (!empty($this->actions)) : ?>
 		<thead>
 			<tr>
-				<td colspan="6">
+				<td colspan="6" class="center">
 					<label>
-						<input class="kcheckall pull-right" type="checkbox" name="toggle" value="" />
+						<input class="kcheckall" type="checkbox" name="toggle" value="" />
 					</label>
 				</td>
 			</tr>
@@ -60,7 +59,7 @@ $colspan = empty($this->actions) ? 5 : 6;
 		<tfoot>
 			<tr>
 				<td colspan="<?php echo $colspan; ?>">
-					<?php if (!empty($this->moreUri)) echo JHtml::_('kunenaforum.link', $this->moreUri, JText::_('COM_KUNENA_MORE'), null, null, 'follow'); ?>
+					<?php if (!empty($this->moreUri)) echo JHtml::_('kunenaforum.link', $this->moreUri, JText::_('COM_KUNENA_MORE'), null, 'btn btn-primary', 'follow'); ?>
 					<?php if (!empty($this->actions)) : ?>
 					<?php echo JHtml::_('select.genericlist', $this->actions, 'task', 'class="inputbox kchecktask" size="1"', 'value', 'text', 0, 'kchecktask'); ?>
 					<?php if (isset($this->actions['move'])) :
