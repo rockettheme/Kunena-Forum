@@ -17,7 +17,6 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 		$this->getSuggestions();
 		$this->start = $this->pagination->limitstart + 1;
 		$this->end = $this->start + $this->pagination->limit - 1;
-		
 	}
 
 	public function getTopicUrl($topic) {

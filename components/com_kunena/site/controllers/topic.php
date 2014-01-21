@@ -232,7 +232,9 @@ class KunenaControllerTopic extends KunenaController {
 			'poll_time_to_live' => JRequest::getString ( 'poll_time_to_live', 0 ),
 			'tags' => JRequest::getString ( 'tags', null ),
 			'mytags' => JRequest::getString ( 'mytags', null ),
-			'subscribe' => JRequest::getInt ( 'subscribeMe', 0 )
+			'subscribe' => JRequest::getInt ( 'subscribeMe', 0 ),
+
+			'private' => (string) $this->input->getRaw('private'),
 		);
 		$this->app->setUserState('com_kunena.postfields', $fields);
 
@@ -401,6 +403,9 @@ class KunenaControllerTopic extends KunenaController {
 		// Update Tags
 		$this->updateTags($message->thread, $fields['tags'], $fields['mytags']);
 
+		// Post Private message
+		$this->postPrivate($message);
+
 		$message->sendNotification();
 
 		//now try adding any new subscriptions if asked for by the poster
@@ -422,8 +427,6 @@ class KunenaControllerTopic extends KunenaController {
 		} else {
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_POST_SUCCESS_POSTED' ) );
 		}
-
-		$this->postPrivate($message);
 
 		$category = KunenaForumCategoryHelper::get($this->return);
 		if ($message->authorise('read', null, false)) {
@@ -452,7 +455,9 @@ class KunenaControllerTopic extends KunenaController {
 			'poll_options' => JRequest::getVar('polloptionsID', array (), 'post', 'array'),
 			'poll_time_to_live' => JRequest::getString ( 'poll_time_to_live', 0 ),
 			'tags' => JRequest::getString ( 'tags', null ),
-			'mytags' => JRequest::getString ( 'mytags', null )
+			'mytags' => JRequest::getString ( 'mytags', null ),
+
+			'private' => (string) $this->input->getRaw('private'),
 		);
 
 		if (! JSession::checkToken('post')) {
@@ -594,6 +599,7 @@ class KunenaControllerTopic extends KunenaController {
 		// Update Tags
 		$this->updateTags($message->thread, $fields['tags'], $fields['mytags']);
 
+		// Edit Private message.
 		$this->editPrivate($message);
 
 		$activity->onAfterEdit($message);
