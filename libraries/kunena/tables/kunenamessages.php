@@ -46,6 +46,7 @@ class TableKunenaMessages extends KunenaTable {
 	public function reset() {
 		parent::reset();
 		$this->message = null;
+		$this->private = false;
 	}
 
 	public function load($id = null, $reset = true)
@@ -105,6 +106,12 @@ class TableKunenaMessages extends KunenaTable {
 		if (!$this->message) {
 			$this->setError ( JText::_ ( 'COM_KUNENA_LIB_TABLE_MESSAGES_ERROR_NO_MESSAGE' ) );
 		}
+
+		// Private message support.
+		if ($this->message == "[PRIVATE={$this->userid}]") {
+			$this->message = '';
+		}
+
 		if (!$this->time) {
 			$this->time = JFactory::getDate()->toUnix();
 		}

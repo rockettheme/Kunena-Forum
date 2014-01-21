@@ -348,9 +348,14 @@ class KunenaControllerTopic extends KunenaController {
 			$text = trim(JFilterOutput::cleanText($text));
 		}
 		if (!$text) {
-			$this->app->enqueueMessage ( JText::_('COM_KUNENA_LIB_TABLE_MESSAGES_ERROR_NO_MESSAGE'), 'error' );
-			$this->setRedirectBack();
-			return;
+			if (trim($fields['private'])) {
+				// Allow empty message if private message part has been filled up.
+				$message->message = trim($message->message) ? $message->message : "[PRIVATE={$message->userid}]";
+			} else {
+				$this->app->enqueueMessage ( JText::_('COM_KUNENA_LIB_TABLE_MESSAGES_ERROR_NO_MESSAGE'), 'error' );
+				$this->setRedirectBack();
+				return;
+			}
 		}
 
 		// Activity integration
@@ -525,15 +530,20 @@ class KunenaControllerTopic extends KunenaController {
 			$text = trim(JFilterOutput::cleanText($text));
 		}
 		if (!$text) {
-			// Reload message (we don't want to change it).
-			$message->load();
-			if ($message->publish(KunenaForum::DELETED)) {
-				$this->app->enqueueMessage(JText::_('COM_KUNENA_POST_SUCCESS_DELETE'));
+			if (trim($fields['private'])) {
+				// Allow empty message if private message part has been filled up.
+				$message->message = trim($message->message) ? $message->message : "[PRIVATE={$message->userid}]";
 			} else {
-				$this->app->enqueueMessage($message->getError(), 'notice');
+				// Reload message (we don't want to change it).
+				$message->load();
+				if ($message->publish(KunenaForum::DELETED)) {
+					$this->app->enqueueMessage(JText::_('COM_KUNENA_POST_SUCCESS_DELETE'));
+				} else {
+					$this->app->enqueueMessage($message->getError(), 'notice');
+				}
+				$this->setRedirect($message->getUrl($this->return, false));
+				return;
 			}
-			$this->setRedirect($message->getUrl($this->return, false));
-			return;
 		}
 
 		// Activity integration
