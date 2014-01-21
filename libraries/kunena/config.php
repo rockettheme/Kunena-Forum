@@ -88,6 +88,7 @@ class KunenaConfig extends JObject {
 	public $userlist_userhits = 1;
 	public $latestcategory = '';
 	public $showstats = 1;
+	public $showstats_to_guests = 0;
 	public $showwhoisonline = 1;
 	public $showgenstats = 1;
 	public $showpopuserstats = 1;

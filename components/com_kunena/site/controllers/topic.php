@@ -242,6 +242,9 @@ class KunenaControllerTopic extends KunenaController {
 			return;
 		}
 
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
+
 		$captcha = KunenaSpamRecaptcha::getInstance();
 		if ($captcha->enabled()) {
 			$success = $captcha->verify();
@@ -465,6 +468,9 @@ class KunenaControllerTopic extends KunenaController {
 			$this->setRedirectBack();
 			return;
 		}
+
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
 
 		// Update message contents
 		$message->edit ( $fields );
@@ -915,6 +921,9 @@ class KunenaControllerTopic extends KunenaController {
 			return;
 		}
 
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
+
 		if ($this->mesid) {
 			// Approve message
 			$target = KunenaForumMessageHelper::get($this->mesid);
@@ -1053,6 +1062,9 @@ class KunenaControllerTopic extends KunenaController {
 		$reason = JRequest::getString ( 'reason' );
 		$text = JRequest::getString ( 'text' );
 
+		// Load language file from the template.
+		KunenaFactory::getTemplate()->loadLanguage();
+
 		if (empty ( $reason ) && empty ( $text )) {
 			// Do nothing: empty subject or reason is empty
 			$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_REPORT_FORG0T_SUB_MES' ) );
@@ -1074,8 +1086,13 @@ class KunenaControllerTopic extends KunenaController {
 				jimport ( 'joomla.environment.uri' );
 				$msglink = JUri::getInstance()->toString(array('scheme', 'host', 'port')) . $target->getPermaUrl(null, false);
 
+				$mail = JFactory::getMailer();
+				$mail->setSender(array($this->me->username, $this->me->email));
+				$mail->setSubject($mailsubject);
+
 				// Render the email.
 				$layout = KunenaLayout::factory('Email/Report')->debug(false)
+					->set('mail', $mail)
 					->set('message', $message)
 					->set('me', $this->me)
 					->set('title', $reason)
@@ -1083,10 +1100,8 @@ class KunenaControllerTopic extends KunenaController {
 					->set('messageLink', $msglink);
 
 				try {
-					$output = $layout->render();
-					list($mailmessage, $alt) = explode('-----=====-----', $output);
-					$mailmessage = trim((string) $mailmessage);
-					$alt = trim((string) $alt);
+					$body = trim($layout->render());
+					$mail->setBody($body);
 
 				} catch (Exception $e) {
 					// TODO: Deprecated in 3.1, remove in 4.0
@@ -1104,6 +1119,8 @@ class KunenaControllerTopic extends KunenaController {
 					$mailmessage .= "\n-----\n\n";
 					$mailmessage .= "" . JText::_ ( 'COM_KUNENA_REPORT_POST_LINK' ) . " " . $msglink;
 					$mailmessage = JMailHelper::cleanBody ( strtr ( $mailmessage, array ('&#32;' => '' ) ) );
+
+					$mail->setBody($mailmessage);
 				}
 
 				foreach ( $emailToList as $emailTo ) {
@@ -1111,14 +1128,7 @@ class KunenaControllerTopic extends KunenaController {
 						continue;
 
 					try {
-						$mail = JFactory::getMailer();
-						$mail->setSender(array($this->me->username,$this->me->email));
-						if (!empty($alt)) {
-							$mail->isHtml(true);
-							$mail->AltBody = $alt;
-						}
-						$mail->setBody($mailmessage);
-						$mail->setSubject($mailsubject);
+						$mail->ClearAddresses();
 						$mail->addRecipient($emailTo->email);
 						$mail->send();
 					} catch (Exception $e) {

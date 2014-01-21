@@ -172,19 +172,19 @@ class KunenaForumMessageAttachment extends JObject {
 				}
 
 				$img = '<img title="' . $this->getFilename() . '" ' . $imgsize . ' src="' . $thumbUrl . '" alt="' . $this->getFilename() . '" />';
-				$this->_thumblink = $this->_getAttachementLink($imageUrl, $img, $this->getFilename(), ($config->lightbox)? 'lightbox[thumb' . intval($this->mesid) . ']' : '');
+				$this->_thumblink = $this->_getAttachementLink($imageUrl, $img, $this->getFilename(), ($config->lightbox)? true : false);
 
 				$img = '<img title="' . $this->getFilename() . '" src="' . $imageUrl . '" alt="' . $this->getFilename() . '" />';
-				$this->_imagelink = $this->_getAttachementLink($imageUrl, $img, $this->getFilename(), ($config->lightbox)?'lightbox[imagelink' . intval($this->mesid) .']' : '');
+				$this->_imagelink = $this->_getAttachementLink($imageUrl, $img, $this->getFilename(), ($config->lightbox)? true : false);
 
-				$this->_textLink = $this->_getAttachementLink($imageUrl, $this->escape($this->_shortname), $this->getFilename(), ($config->lightbox)?'lightbox[simple' . intval($this->mesid) . ']' . ' nofollow':' nofollow' ) . ' (' . number_format(intval($this->size) / 1024, 0, '', ',') . 'KB)';
+				$this->_textLink = $this->_getAttachementLink($imageUrl, $this->escape($this->_shortname), $this->getFilename(), ($config->lightbox)? true : false, 'nofollow') . ' (' . number_format(intval($this->size) / 1024, 0, '', ',') . 'KB)';
 
 			} else {
 				$fileUrl = $this->getUrl();
 				// Filetype without thumbnail or icon support - use default file icon
 				$img = '<img src="' . JUri::root(true). '/media/kunena/images/attach_generic.png" alt="' . JText::_ ( 'COM_KUNENA_ATTACH' ) . '" />';
-				$this->_thumblink = $this->_getAttachementLink($fileUrl, $img, $this->getFilename(), 'nofollow');
-				$this->_textLink = $this->_getAttachementLink ($fileUrl, $this->escape($this->_shortname), $this->getFilename(), 'nofollow') . ' (' . number_format(intval($this->size) / 1024, 0, '', ',') . 'KB)';
+				$this->_thumblink = $this->_getAttachementLink($fileUrl, $img, $this->getFilename(), false, 'nofollow');
+				$this->_textLink = $this->_getAttachementLink ($fileUrl, $this->escape($this->_shortname), $this->getFilename(), false, 'nofollow') . ' (' . number_format(intval($this->size) / 1024, 0, '', ',') . 'KB)';
 			}
 
 			$this->disabled = false;
@@ -637,7 +637,7 @@ class KunenaForumMessageAttachment extends JObject {
 	 *
 	 * @return string
 	 */
-	protected function _getAttachementLink($link, $name, $title = '', $rel = 'nofollow') {
-		return '<a href="'.$link.'" title="'.$title.'" rel="'.$rel.'">'.$name.'</a>';
+	protected function _getAttachementLink($link, $name, $title = '', $data = false, $rel = 'nofollow') {
+		return '<a href="'.$link.'" title="'.$title.'" rel="'.$rel.'"'.($data ? ' data-modal' : '').'>'.$name.'</a>';
 	}
 }

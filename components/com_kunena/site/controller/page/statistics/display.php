@@ -38,9 +38,9 @@ class ComponentKunenaControllerPageStatisticsDisplay extends KunenaControllerDis
 
 		$this->config = KunenaConfig::getInstance();
 
-		if (!$this->config->get('showstats'))
+		if (!$this->config->get('showstats') || (!$this->config->get('showstats_to_guests') && !KunenaUserHelper::get()->exists()))
 		{
-			return false;
+			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), '404');
 		}
 
 		$statistics = KunenaForumStatistics::getInstance();
@@ -48,7 +48,7 @@ class ComponentKunenaControllerPageStatisticsDisplay extends KunenaControllerDis
 		$this->setProperties($statistics);
 
 		$this->latestMemberLink = KunenaFactory::getUser(intval($this->lastUserId))->getLink();
-		$this->statisticsUrl = KunenaRoute::_('index.php?option=com_kunena&view=statistics');
+		$this->statisticsUrl = KunenaFactory::getProfile()->getStatisticsURL();
 		$this->userlistUrl = KunenaFactory::getProfile()->getUserListUrl();
 
 		return true;
