@@ -105,13 +105,9 @@ class KunenaControllerApplicationDisplay extends KunenaControllerDisplay
 				$this->content = $content->render();
 
 			} catch (KunenaExceptionAuthorise $e) {
-				$this->setResponseStatus($e->getResponseCode());
-				$this->output->setLayout('unauthorized');
-				$this->document->setTitle($e->getResponseStatus());
-
-				$this->content = KunenaLayout::factory('Page/Custom')
-					->set('header', $e->getResponseStatus())
-					->set('body', $e->getMessage());
+				// ***** This is for RocketTheme only with RokClub Integration ********
+				JFactory::getApplication()->enqueueMessage('You are not authorized to view that page, please login...');
+				JFactory::getApplication()->redirect(RokClubRoute::_('index.php?option=com_rokclub&view=login'));
 
 			} catch (Exception $e) {
 				$this->setResponseStatus($e->getCode());
