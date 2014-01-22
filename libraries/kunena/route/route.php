@@ -522,6 +522,10 @@ abstract class KunenaRoute {
 		return $xhtml ? htmlentities($url, ENT_COMPAT, 'utf-8') : $url;
 	}
 
+	public static function getCategoryItemid(KunenaForumCategory $category) {
+		return KunenaRoute::getItemID("index.php?option=com_kunena&view=category&catid={$category->id}");
+	}
+
 	public static function getTopicUrl(KunenaForumTopic $topic, $xhtml = true, $action = null,
 	                                   KunenaForumCategory $category = null) {
 		static $uris = null;
