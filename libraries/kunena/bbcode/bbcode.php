@@ -1764,9 +1764,12 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 		if ($action == BBCODE_CHECK)
 			return true;
 
+		$attachments = null;
 		if ($bbcode->parent instanceof KunenaForumMessage) {
 			$attachments = $bbcode->parent->getAttachments();
-		} elseif (is_object($bbcode->parent) && isset($bbcode->parent->attachments)) {
+		} elseif ($bbcode->parent instanceof KunenaPrivateMessage) {
+			$attachments = KunenaForumMessageAttachmentHelper::getById($bbcode->parent->attachments()->getMapped());
+		} elseif (is_object($bbcode->parent) && isset($bbcode->parent->attachments) && is_array($bbcode->parent->attachments)) {
 			$attachments = &$bbcode->parent->attachments;
 		}
 		// Display tag in activity streams etc..
@@ -1778,8 +1781,8 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 		$attachment = null;
 		if (! empty ( $default )) {
 			$attachment = KunenaForumMessageAttachmentHelper::get ($default);
-			if (is_object ( $attachment )) {
-				unset ( $attachments [$attachment->id] );
+			if (!empty($attachments) && is_object($attachment)) {
+				unset ($attachments[$attachment->id]);
 			}
 		} elseif (empty ( $content )) {
 			$attachment = array_shift ( $attachments );
@@ -1857,7 +1860,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 				// File does not exist (or URL was pointing somewhere else)
 				return '<div class="kmsgattach"><h4>' . JText::sprintf ( 'COM_KUNENA_ATTACHMENT_DELETED', $bbcode->HTMLEncode ( $filename ) ) . '</h4></div>';
 			} else {
-				if (isset ( $bbcode->parent->attachments )) {
+				if (isset($bbcode->parent->attachments) && is_array($bbcode->parent->attachments)) {
 					// Remove attachment from the attachments list
 					$attachments = &$bbcode->parent->attachments;
 					foreach ( $attachments as $att ) {
@@ -1928,7 +1931,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 		}
 
 		// Legacy attachments support (mostly used to remove image from attachments list), but also fixes broken links
-		if (isset ( $bbcode->parent->attachments ) && strpos ( $fileurl, '/media/kunena/attachments/legacy/images/' )) {
+		if (isset($bbcode->parent->attachments) && is_array($bbcode->parent->attachments) && strpos($fileurl, '/media/kunena/attachments/legacy/images/')) {
 			// Make sure that filename does not contain path or URL
 			$filename = basename($fileurl);
 
