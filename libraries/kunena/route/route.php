@@ -514,7 +514,7 @@ abstract class KunenaRoute {
 		static $uri = null;
 
 		if (!$uri) {
-			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$itemid = self::getCategoryItemid($category);
 			$uri = JRoute::_("index.php?option=com_kunena&view=category&catid=@&Itemid={$itemid}", false);
 		}
 		$url = sprintf($uri, $category->alias);
@@ -523,7 +523,7 @@ abstract class KunenaRoute {
 	}
 
 	public static function getCategoryItemid(KunenaForumCategory $category) {
-		return KunenaRoute::getItemID("index.php?option=com_kunena&view=category&catid={$category->id}");
+		return isset(self::$home) ? self::$home->id : 0;
 	}
 
 	public static function getTopicUrl(KunenaForumTopic $topic, $xhtml = true, $action = null,
@@ -531,8 +531,10 @@ abstract class KunenaRoute {
 		static $uris = null;
 		static $toMessage = null;
 
+		if (!$category) $category = $topic->getCategory();
+
 		if (!$uris) {
-			$itemid = isset(self::$home) ? self::$home->id : 0;
+			$itemid = self::getCategoryItemid($category);
 			$uris = array();
 			$uris['first'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
 			$uris['start'] = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&start=@&Itemid={$itemid}", false);
@@ -541,7 +543,6 @@ abstract class KunenaRoute {
 			$toMessage = KunenaUserHelper::getMyself()->getTopicLayout() == 'threaded';
 		}
 
-		if (!$category) $category = $topic->getCategory();
 		$start = 0;
 		$fragment = '';
 		$id = $topic->id;
@@ -591,13 +592,13 @@ abstract class KunenaRoute {
 	                                     KunenaForumTopic $topic = null, KunenaForumCategory $category = null) {
 		static $uri = null;
 
-		if (!$uri) {
-			$itemid = isset(self::$home) ? self::$home->id : 0;
-			$uri = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
-		}
-
 		if (!$category) $category = $message->getCategory();
 		if (!$topic) $topic = $message->getCategory();
+
+		if (!$uri) {
+			$itemid = self::getCategoryItemid($category);
+			$uri = JRoute::_("index.php?option=com_kunena&view=topic&catid=@&id=@&Itemid={$itemid}", false);
+		}
 
 		$id = $topic->id;
 		$subject = self::stringURLSafe($topic->subject);
