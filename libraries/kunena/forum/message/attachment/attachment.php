@@ -263,15 +263,23 @@ class KunenaForumMessageAttachment extends JObject {
 			throw new InvalidArgumentException(JText::sprintf('COM_KUNENA_LIB_AUTHORISE_INVALID_ACTION', $action), 500);
 		}
 
-		// Load message authorisation.
-		$exception = $this->getMessage()->tryAuthorise('attachment.'.$action, $user, false);
+		// Check if attachment is private.
+		if ($this->protected & KunenaForumMessageAttachment::PROTECTION_PRIVATE)
+		{
+			$exception = $this->authorisePrivate($user);
+		}
+		else
+		{
+			// Load message authorisation.
+			$exception = $this->getMessage()->tryAuthorise('attachment.'.$action, $user, false);
 
-		// Check authorisation.
-		if (!$exception) {
-			foreach (self::$actions[$action] as $function) {
-				$authFunction = 'authorise'.$function;
-				$exception = $this->$authFunction($user);
-				if ($exception) break;
+			// Check authorisation.
+			if (!$exception) {
+				foreach (self::$actions[$action] as $function) {
+					$authFunction = 'authorise'.$function;
+					$exception = $this->$authFunction($user);
+					if ($exception) break;
+				}
 			}
 		}
 
@@ -541,6 +549,52 @@ class KunenaForumMessageAttachment extends JObject {
 	}
 
 	// Internal functions
+
+	/**
+	 * @param KunenaUser $user
+	 *
+	 * @return RuntimeException|null
+	 */
+	protected function authorisePrivate(KunenaUser $user)
+	{
+		if (!$user->exists())
+		{
+			return new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 401);
+		}
+
+		// Need to load private message (for now allow only one private message per attachment).
+		$map = JTable::getInstance('KunenaPrivateAttachmentMap', 'Table');
+		$map->load(array('attachment_id' => $this->id));
+
+		$finder = new KunenaPrivateMessageFinder();
+		$private = $finder->where('id', '=', $map->private_id)->firstOrNew();
+
+		if (!$private->exists())
+		{
+			return new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 404);
+		}
+
+		if (in_array($user->userid, $private->users()->getMapped()))
+		{
+			// Yes, I have access..
+			return null;
+		}
+		else
+		{
+			$messages = KunenaForumMessageHelper::getMessages($private->posts()->getMapped());
+
+			foreach ($messages as $message)
+			{
+				if ($user->isModerator($message->getCategory()))
+				{
+					// Yes, I have access..
+					return null;
+				}
+			}
+		}
+
+		return new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 403);
+	}
 
 	protected function check() {
 		//$author = KunenaUserHelper::get($this->userid);

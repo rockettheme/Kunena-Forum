@@ -63,15 +63,7 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 		}
 
 		$attachment = KunenaForumMessageAttachmentHelper::get($id);
-		$me = KunenaUserHelper::getMyself();
-		if ($me->exists() && $attachment->protected & KunenaForumMessageAttachment::PROTECTION_PRIVATE)
-		{
-			$this->privateAccess($attachment, $me);
-		}
-		else
-		{
-			$attachment->tryAuthorise();
-		}
+		$attachment->tryAuthorise();
 
 		$path = JPATH_ROOT . '/' . $attachment->folder . '/thumb/' . $attachment->filename;
 
@@ -149,42 +141,6 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 		@readfile($path);
 		flush();
 		$this->app->close();
-	}
-
-	protected function privateAccess(KunenaForumMessageAttachment $attachment, KunenaUser $me)
-	{
-		// Need to load private message (for now allow only one private message per attachment).
-		$map = JTable::getInstance('KunenaPrivateAttachmentMap', 'Table');
-		$map->load(array('attachment_id' => $attachment->id));
-
-		$finder = new KunenaPrivateMessageFinder();
-		$private = $finder->where('id', '=', $map->private_id)->firstOrNew();
-
-		if (!$private->exists())
-		{
-			throw new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 404);
-		}
-
-		if (in_array($me->userid, $private->users()->getMapped()))
-		{
-			// Yes, I have access..
-			return;
-		}
-		else
-		{
-			$messages = KunenaForumMessageHelper::getMessages($private->posts()->getMapped());
-
-			foreach ($messages as $message)
-			{
-				if ($me->isModerator($message->catid))
-				{
-					// Yes, I have access..
-					return;
-				}
-			}
-		}
-
-		throw new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), $me->exists() ? 403 : 401);
 	}
 
 	/**
