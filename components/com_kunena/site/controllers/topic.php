@@ -1139,18 +1139,15 @@ class KunenaControllerTopic extends KunenaController {
 					$mail->setBody($mailmessage);
 				}
 
+				$receivers = array();
 				foreach ( $emailToList as $emailTo ) {
 					if (! $emailTo->email || ! JMailHelper::isEmailAddress ( $emailTo->email ))
 						continue;
 
-					try {
-						$mail->ClearAddresses();
-						$mail->addRecipient($emailTo->email);
-						$mail->send();
-					} catch (Exception $e) {
-						JLog::add($e->getMessage(), JLog::WARNING, 'kunena');
-					}
+					$receivers[] = $emailTo->email;
 				}
+
+				KunenaEmail::send($mail, $receivers);
 
 				$this->app->enqueueMessage ( JText::_ ( 'COM_KUNENA_REPORT_SUCCESS' ) );
 			} else {
