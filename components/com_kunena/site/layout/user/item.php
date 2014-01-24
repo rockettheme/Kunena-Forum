@@ -57,6 +57,7 @@ class KunenaLayoutUserItem extends KunenaLayout
 				'filter_order' => 'time',
 				'limitstart' => 0,
 				'filter_order_Dir' => 'desc',
+				'display' => $this->state->get('display','')
 			);
 
 			$tab = new stdClass;
