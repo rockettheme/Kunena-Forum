@@ -434,7 +434,7 @@ class KunenaControllerTopic extends KunenaController {
 		}
 
 		$category = KunenaForumCategoryHelper::get($this->return);
-		if ($message->authorise('read', null, false)) {
+		if ($message->authorise('read', null, false) && $this->id) {
 			$this->setRedirect ( $message->getUrl($category, false) );
 		} elseif ($topic->authorise('read', null, false)) {
 			$this->setRedirect ( $topic->getUrl($category, false) );
