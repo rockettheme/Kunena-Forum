@@ -79,12 +79,15 @@ class ComponentKunenaControllerMessageItemActionsDisplay extends KunenaControlle
 		}
 
 		// Thank you.
-		if ($this->message->isAuthorised('thankyou') && !array_key_exists($me->userid, $this->message->thankyou))
-		{
-			$this->messageButtons->set('thankyou',
-				$this->getButton(sprintf($task, 'thankyou'), 'thankyou', 'message', 'user')
-			);
+		if (isset($this->message->thankyou)) {
+			if ($this->message->isAuthorised('thankyou') && !array_key_exists($me->userid, $this->message->thankyou))
+			{
+				$this->messageButtons->set('thankyou',
+					$this->getButton(sprintf($task, 'thankyou'), 'thankyou', 'message', 'user')
+				);
+			}	
 		}
+		
 
 		// Report this.
 		if (KunenaFactory::getConfig()->reportmsg && $me->exists())
