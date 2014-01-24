@@ -57,6 +57,11 @@ class ComponentKunenaControllerMessageItemActionsDisplay extends KunenaControlle
 		// Reply / Quote
 		if ($this->message->isAuthorised('reply'))
 		{
+			
+			$this->messageButtons->set('reply',
+				$this->getButton(sprintf($layout, 'reply'), 'reply', 'message', 'communication', null, true)
+			);
+
 			if ($me->exists() && !KunenaSpamRecaptcha::getInstance()->enabled())
 			{
 				$this->messageButtons->set('quickreply',
@@ -64,9 +69,6 @@ class ComponentKunenaControllerMessageItemActionsDisplay extends KunenaControlle
 				);
 			}
 
-			$this->messageButtons->set('reply',
-				$this->getButton(sprintf($layout, 'reply'), 'reply', 'message', 'communication')
-			);
 			$this->messageButtons->set('quote',
 				$this->getButton(sprintf($layout, 'reply&quote=1'), 'quote', 'message', 'communication')
 			);
@@ -167,9 +169,9 @@ class ComponentKunenaControllerMessageItemActionsDisplay extends KunenaControlle
 	 *
 	 * @return  string
 	 */
-	public function getButton($url, $name, $scope, $type, $id = null)
+	public function getButton($url, $name, $scope, $type, $id = null, $primary = false)
 	{
 		return KunenaLayout::factory('Page/Button')
-			->setProperties(array('url' => KunenaRoute::_($url), 'name' => $name, 'scope' => $scope, 'type' => $type, 'id' => $id));
+			->setProperties(array('url' => KunenaRoute::_($url), 'name' => $name, 'scope' => $scope, 'type' => $type, 'id' => $id, 'primary' => $primary));
 	}
 }
