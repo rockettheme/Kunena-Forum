@@ -208,6 +208,7 @@ class KunenaConfig extends JObject {
 	public $topic_layout = 'flat';
 	public $time_to_create_page = 1;
 	public $show_imgfiles_manage_profile = 1;
+	public $superadmin_userlist = 1;
 	public $hold_newusers_posts = 0;
 	public $hold_guest_posts = 0;
 	public $attachment_limit = 8;

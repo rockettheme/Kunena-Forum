@@ -337,6 +337,8 @@ class KunenaAdminModelConfig extends KunenaModel {
 
 		$lists ['pickup_category'] = JHtml::_('select.genericlist', $yesno, 'cfg_pickup_category', 'class="inputbox" size="1"', 'value', 'text', $this->config->pickup_category);
 
+		$lists ['superadmin_userlist'] = JHtml::_('select.genericlist', $yesno, 'cfg_superadmin_userlist', 'class="inputbox" size="1"', 'value', 'text', $this->config->superadmin_userlist);
+
 		$article_display[] = JHtml::_('select.option', 'full', JText::_('COM_KUNENA_COM_A_FULL_ARTICLE'));
 		$article_display[] = JHtml::_('select.option', 'intro', JText::_('COM_KUNENA_COM_A_INTRO_ARTICLE'));
 		$article_display[] = JHtml::_('select.option', 'link', JText::_('COM_KUNENA_COM_A_ARTICLE_LINK'));
