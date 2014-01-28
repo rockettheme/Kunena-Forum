@@ -21,7 +21,7 @@ class KunenaAvatarKunena extends KunenaAvatar {
 	public function load($userlist)
 	{
 		// TODO: Move to RokClub plugin
-		RokClubSubscription::loadUserStatuses($userlist);
+		if (KunenaUserHelper::getMyself()->isModerator()) RokClubSubscription::loadUserStatuses($userlist);
 	}
 
 	public function getEditURL()
