@@ -705,6 +705,16 @@ defined ( '_JEXEC' ) or die ();
 														<td class="nowrap"><input type="text" name="cfg_avatarquality" class="ksm-field" value="<?php echo $this->escape($this->config->avatarquality) ?>" /> %</td>
 														<td></td>
 													</tr>
+													<tr>
+														<td><?php echo JText::_('COM_KUNENA_AVATAR_RESIZE_METHOD') ?></td>
+														<td class="nowrap"><input type="text" name="cfg_avatarresizemethod" class="ksm-field" value="<?php echo $this->escape($this->config->avatarresizemethod) ?>" /> %</td>
+														<td></td>
+													</tr>
+													<tr>
+														<td><?php echo JText::_('COM_KUNENA_AVATAR_CROP') ?></td>
+														<td><?php echo $this->lists ['avatarcrop'] ?></td>
+														<td></td>
+													</tr>
 												</tbody>
 											</table>
 										</fieldset>

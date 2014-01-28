@@ -337,8 +337,6 @@ class KunenaAdminModelConfig extends KunenaModel {
 
 		$lists ['pickup_category'] = JHtml::_('select.genericlist', $yesno, 'cfg_pickup_category', 'class="inputbox" size="1"', 'value', 'text', $this->config->pickup_category);
 
-		$lists ['superadmin_userlist'] = JHtml::_('select.genericlist', $yesno, 'cfg_superadmin_userlist', 'class="inputbox" size="1"', 'value', 'text', $this->config->superadmin_userlist);
-
 		$article_display[] = JHtml::_('select.option', 'full', JText::_('COM_KUNENA_COM_A_FULL_ARTICLE'));
 		$article_display[] = JHtml::_('select.option', 'intro', JText::_('COM_KUNENA_COM_A_INTRO_ARTICLE'));
 		$article_display[] = JHtml::_('select.option', 'link', JText::_('COM_KUNENA_COM_A_ARTICLE_LINK'));
@@ -400,8 +398,14 @@ class KunenaAdminModelConfig extends KunenaModel {
 		$lists['legacy_urls'] = JHtml::_('select.genericlist', $options, 'cfg_legacy_urls', 'class="inputbox" size="1"', 'value', 'text', $this->config->legacy_urls);
 		$lists['attachment_protection'] = JHtml::_('select.genericlist', $yesno, 'cfg_attachment_protection', 'class="inputbox" size="1"', 'value', 'text', $this->config->attachment_protection);
 
-		// Option to select if the stats link need to be showed for all users or only for registred users
 		$lists ['statslink_allowed'] = JHtml::_('select.genericlist', $yesno, 'cfg_statslink_allowed', 'class="inputbox" size="1"', 'value', 'text', $this->config->statslink_allowed);
+		$lists ['superadmin_userlist'] = JHtml::_('select.genericlist', $yesno, 'cfg_superadmin_userlist', 'class="inputbox" size="1"', 'value', 'text', $this->config->superadmin_userlist);
+		$resizeoptions = array();
+		$resizeoptions[] = JHtml::_('select.option', '0', JText::_('COM_KUNENA_RESIZE_RESIZE'));
+		$resizeoptions[] = JHtml::_('select.option', '1', JText::_('COM_KUNENA_RESIZE_INTERPOLATION'));
+		$resizeoptions[] = JHtml::_('select.option', '2', JText::_('COM_KUNENA_RESIZE_BICUBIC'));
+		$lists ['avatarresizemethod'] = JHtml::_('select.genericlist', $resizeoptions, 'cfg_avatarresizemethod', 'class="inputbox" size="1"', 'value', 'text', $this->config->avatarresizemethod);
+		$lists ['avatarcrop'] = JHtml::_('select.genericlist', $yesno, 'cfg_avatarcrop', 'class="inputbox" size="1"', 'value', 'text', $this->config->avatarcrop);
 
 		return $lists;
 	}
