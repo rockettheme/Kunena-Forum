@@ -24,11 +24,11 @@ class KunenaImageHelper
 	 * @param  int     $maxWidth    Maximum width for the image.
 	 * @param  int     $maxHeight   Maximum height for the image.
 	 * @param  int     $quality     Quality for the file (1-100).
-	 * @param  int     $scale       See available JImage constants.
+	 * @param  int     $scale       See available KunenaImageImage constants.
 	 *
 	 * @return bool    True on success.
 	 */
-	public static function version($file, $folder, $filename, $maxWidth=800, $maxHeight=800, $quality=70, $scale=JImage::SCALE_INSIDE)
+	public static function version($file, $folder, $filename, $maxWidth=800, $maxHeight=800, $quality=70, $scale=KunenaImageImage::SCALE_INSIDE)
 	{
 		try
 		{
@@ -41,7 +41,7 @@ class KunenaImageHelper
 			// Make sure that index.html exists in the folder.
 			KunenaFolder::createIndex($folder);
 
-			$info = JImage::getImageFileProperties($file);
+			$info = KunenaImageImage::getImageFileProperties($file);
 
 			if ($info->width > $maxWidth || $info->height > $maxHeight)
 			{
@@ -60,7 +60,7 @@ class KunenaImageHelper
 				$options = array('quality' => $quality);
 
 				// Resize image and copy it to temporary file.
-				$image = new JImage($file);
+				$image = new KunenaImageImage($file);
 				$image = $image->resize($maxWidth, $maxHeight, false, $scale);
 				$temp = KunenaPath::tmpdir() . '/kunena_' . md5(rand());
 				$image->toFile($temp, $info->type, $options);
@@ -88,4 +88,6 @@ class KunenaImageHelper
 		}
 		return true;
 	}
+
+	
 }
