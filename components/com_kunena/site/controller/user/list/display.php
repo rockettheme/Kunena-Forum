@@ -49,13 +49,8 @@ class ComponentKunenaControllerUserListDisplay extends KunenaControllerDisplay
 		$start = $this->state->get('list.start');
 		$limit = $this->state->get('list.limit');
 
-		// Exclude super admins.
-		if ($this->config->superadmin_userlist) {
-			$filter = JAccess::getUsersByGroup(8);	
-		} else {
-			$filter = array();
-		}
-		
+		// Exclude super admins if configured to do so.
+		$filter = $this->config->superadmin_userlist ? JAccess::getUsersByGroup(8) : array();
 
 		$finder = new KunenaUserFinder;
 		$finder
