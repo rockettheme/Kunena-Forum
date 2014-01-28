@@ -28,10 +28,8 @@ class KunenaImageHelper
 	 *
 	 * @return bool    True on success.
 	 */
-	public static function version($file, $folder, $filename, $maxWidth=800, $maxHeight=800, $quality=70, $scale=KunenaImage::SCALE_INSIDE)
+	public static function version($file, $folder, $filename, $maxWidth=800, $maxHeight=800, $quality=70, $scale=KunenaImage::SCALE_INSIDE, $crop=0)
 	{
-		$config = KunenaFactory::getConfig();
-
 		try
 		{
 			// Create target directory if it does not exist.
@@ -42,7 +40,6 @@ class KunenaImageHelper
 
 			// Make sure that index.html exists in the folder.
 			KunenaFolder::createIndex($folder);
-
 			
 			$info = KunenaImage::getImageFileProperties($file);
 
@@ -66,10 +63,10 @@ class KunenaImageHelper
 				// Resize image and copy it to temporary file.
 				$image = new KunenaImage($file);
 
-				if ($config->avatarcrop && $info->width > $info->height) {
+				if ($crop && $info->width > $info->height) {
 					$image = $image->resize($info->width * $maxHeight / $info->height, $maxHeight , false, $scale);
 					$image = $image->crop($maxWidth, $maxHeight);
-				} elseif ($config->avatarcrop && $info->width < $info->height) {
+				} elseif ($crop && $info->width < $info->height) {
 					$image = $image->resize($maxWidth, $info->height * $maxWidth / $info->width, false, $scale);
 					$image = $image->crop($maxWidth, $maxHeight);
 				} else {
