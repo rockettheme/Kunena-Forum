@@ -138,14 +138,14 @@ class KunenaApplication extends JApplicationWeb {
 	protected function doExecute()
 	{
 		// Handle SEF.
-		$query = $this->input->get('query');
+		$query = $this->input->getString('query', 'foo');
 		$segments = explode('/', $query);
 
 		$segment = array_shift($segments);
 		$this->input->set('id', (int) $segment);
 		$segment = array_shift($segments);
-		if ($segment) {
-			$this->input->set($segment, 1);
+		if ($segment == 'thumb') {
+			$this->input->set('thumb', 1);
 		}
 		$this->input->set('format', 'raw');
 
