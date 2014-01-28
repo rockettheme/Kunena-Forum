@@ -13,7 +13,7 @@ defined('_JEXEC') or die;
 /**
  * Helper class for image manipulation.
  */
-class KunenaImageImage extends JImage
+class KunenaImage extends JImage
 {
 /**
 	 * Method to resize the current image.
@@ -31,10 +31,25 @@ class KunenaImageImage extends JImage
 	 */
 	public function resize($width, $height, $createNew = true, $scaleMethod = self::SCALE_INSIDE)
 	{
+		$config = KunenaFactory::getConfig();
+
 		// Make sure the resource handle is valid.
 		if (!$this->isLoaded())
 		{
 			throw new LogicException('No valid image was loaded.');
+		}
+
+		switch ($config->avatarresizemethod) {
+			case '0':
+				$resizemethod = 'imagecopyresized';
+				break;
+			case '1':
+				$resizemethod = 'imagecopyresampled';
+				break;
+			default:
+				// $resizemethod = 'KunenaImage::imageCopyResampledBicubic';
+				$resizemethod = array('KunenaImage','imageCopyResampledBicubic');
+				break;
 		}
 
 		// Sanitize width.
@@ -85,12 +100,11 @@ class KunenaImageImage extends JImage
 			imagecolortransparent($handle, $color);
 			imagefill($handle, 0, 0, $color);
 
-			$this->imageCopyResampledBicubic($handle, $this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight());
+			// $resizemethod($handle, $this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight());
 		}
-		else
-		{
-			$this->imageCopyResampledBicubic($handle, $this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight());
-		}
+		// call the appropriate resize method
+		// call_user_func_array($resizemethod, array(&$handle, &$this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight()));
+		$resizemethod($handle, $this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight());
 
 		// If we are resizing to a new image, create a new JImage object.
 		if ($createNew)
@@ -114,7 +128,7 @@ class KunenaImageImage extends JImage
 		}
 	}
 
-	protected function imageCopyResampledBicubic(&$dst_image, &$src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)  {
+	public static function imageCopyResampledBicubic(&$dst_image, &$src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)  {
         // we should first cut the piece we are interested in from the source
         $src_img = ImageCreateTrueColor($src_w, $src_h);
         imagecopy($src_img, $src_image, 0, 0, $src_x, $src_y, $src_w, $src_h);

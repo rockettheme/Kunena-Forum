@@ -24,12 +24,14 @@ class KunenaImageHelper
 	 * @param  int     $maxWidth    Maximum width for the image.
 	 * @param  int     $maxHeight   Maximum height for the image.
 	 * @param  int     $quality     Quality for the file (1-100).
-	 * @param  int     $scale       See available KunenaImageImage constants.
+	 * @param  int     $scale       See available KunenaImage constants.
 	 *
 	 * @return bool    True on success.
 	 */
-	public static function version($file, $folder, $filename, $maxWidth=800, $maxHeight=800, $quality=70, $scale=KunenaImageImage::SCALE_INSIDE)
+	public static function version($file, $folder, $filename, $maxWidth=800, $maxHeight=800, $quality=70, $scale=KunenaImage::SCALE_INSIDE)
 	{
+		$config = KunenaFactory::getConfig();
+
 		try
 		{
 			// Create target directory if it does not exist.
@@ -41,10 +43,12 @@ class KunenaImageHelper
 			// Make sure that index.html exists in the folder.
 			KunenaFolder::createIndex($folder);
 
-			$info = KunenaImageImage::getImageFileProperties($file);
+			
+			$info = KunenaImage::getImageFileProperties($file);
 
 			if ($info->width > $maxWidth || $info->height > $maxHeight)
 			{
+				
 				// Make sure that quality is in allowed range.
 				if ($quality < 1 || $quality > 100)
 				{
@@ -60,8 +64,18 @@ class KunenaImageHelper
 				$options = array('quality' => $quality);
 
 				// Resize image and copy it to temporary file.
-				$image = new KunenaImageImage($file);
-				$image = $image->resize($maxWidth, $maxHeight, false, $scale);
+				$image = new KunenaImage($file);
+
+				if ($config->avatarcrop && $info->width > $info->height) {
+					$image = $image->resize($info->width * $maxHeight / $info->height, $maxHeight , false, $scale);
+					$image = $image->crop($maxWidth, $maxHeight);
+				} elseif ($config->avatarcrop && $info->width < $info->height) {
+					$image = $image->resize($maxWidth, $info->height * $maxWidth / $info->width, false, $scale);
+					$image = $image->crop($maxWidth, $maxHeight);
+				} else {
+					$image = $image->resize($maxWidth, $maxHeight, false, $scale);
+				}
+
 				$temp = KunenaPath::tmpdir() . '/kunena_' . md5(rand());
 				$image->toFile($temp, $info->type, $options);
 				unset($image);

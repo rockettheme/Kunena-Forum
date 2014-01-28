@@ -67,6 +67,8 @@ class KunenaConfig extends JObject {
 	public $mailfull = 1;
 	public $allowavatarupload = 1;
 	public $allowavatargallery = 1;
+	public $avatarresizemethod = 1;
+	public $avatarcrop = 0;
 	public $avatarquality = 75;
 	public $avatarsize = 2048;
 	public $imageheight = 800;
