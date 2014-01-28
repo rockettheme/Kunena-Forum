@@ -18,6 +18,12 @@ class KunenaAvatarKunena extends KunenaAvatar {
 		$this->resize = true;
 	}
 
+	public function load($userlist)
+	{
+		// TODO: Move to RokClub plugin
+		RokClubSubscription::loadUserStatuses($userlist);
+	}
+
 	public function getEditURL()
 	{
 		return KunenaRoute::_('index.php?option=com_kunena&view=user&layout=edit');
