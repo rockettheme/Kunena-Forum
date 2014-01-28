@@ -88,38 +88,4 @@ class KunenaLayoutElasticsearchForm extends KunenaLayout
 			echo "enter keywords and/or a username...";
 		}
 	}
-
-	// public function getSuggestions($suggestion = 'simple_phrase') {
-
-	// 	xdebug_break();
-
-	// 	if (isset($this->data)) {
-	// 		$results = $this->data->results;
-	// 		$response = $results->getResponse();
-	// 		$datas = $response->getData();
-	// 		if (isset($datas['suggest'][$suggestion][0]['options'])) {
-	// 			$suggest_data = $datas['suggest'][$suggestion][0]['options'];
-
-	// 			$suggestions = array();
-	// 			foreach ($suggest_data as $suggestion) {
-	// 				$suggestions[] = ' <a href="'.$this->getSuggestUrl($suggestion['text']).'">'.$suggestion['text'].'</a>';
-	// 			}
-	// 			return $suggestions;
-	// 		}
-	// 	}
-
-	// 	return false;
-	// }
-
-	// public function getSuggestUrl($suggestion) {
-
-	// 	$uri = JFactory::getURI();
-	// 	$query_string = $uri->getQuery();
-
-	// 	// remove the page element of the query if it is set
-	// 	parse_str($query_string,$query_array);
-	// 	$query_array['q'] = $suggestion;
-
-	// 	return ElasticSearchHelper::generateUrl(JURI::current(),$query_array);
-	// }
 }
