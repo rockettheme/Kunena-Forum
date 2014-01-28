@@ -104,19 +104,28 @@ class KunenaControllerApplicationDisplay extends KunenaControllerDisplay
 				$content = $this->display()->set('breadcrumb', $this->breadcrumb);
 				$this->content = $content->render();
 
-			} catch (KunenaExceptionAuthorise $e) {
-				// ***** This is for RocketTheme only with RokClub Integration ********
-				JFactory::getApplication()->enqueueMessage('You are not authorized to view that page, please login...');
-				JFactory::getApplication()->redirect(RokClubRoute::_('index.php?option=com_rokclub&view=login'));
-
 			} catch (Exception $e) {
-				$this->setResponseStatus($e->getCode());
+				if (!($e instanceof KunenaExceptionAuthorise)) {
+					$header = 'Error while rendering layout';
+					$content = isset($content) ? $content->renderError($e) : $this->content->renderError($e);
+					$e = new KunenaExceptionAuthorise($e->getMessage(), $e->getCode(), $e);
+				} else {
+					$header = $e->getResponseStatus();
+					$content = $e->getMessage();
+				}
+				if ($e->getResponseCode() == 401) {
+					// ***** This is for RocketTheme only with RokClub Integration ********
+					JFactory::getApplication()->enqueueMessage('You are not authorized to access that page, please login...');
+					JFactory::getApplication()->redirect(RokClubRoute::_('index.php?option=com_rokclub&view=login'));
+				}
+
+				$this->setResponseStatus($e->getResponseCode());
 				$this->output->setLayout('unauthorized');
-				$this->document->setTitle($e->getMessage());
+				$this->document->setTitle($header);
 
 				$this->content = KunenaLayout::factory('Page/Custom')
-					->set('header', 'Error while rendering layout')
-					->set('body', isset($content) ? $content->renderError($e) : $this->content->renderError($e));
+					->set('header', $header)
+					->set('body', $content);
 			}
 		}
 
