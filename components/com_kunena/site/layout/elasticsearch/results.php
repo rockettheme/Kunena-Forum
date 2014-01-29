@@ -29,16 +29,14 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 			$this->message = KunenaForumMessageHelper::get($result->msgid);
 			$this->score = sprintf("%.1f", $result->getScore() * 10);
 
-			if ($this->message->subject == null) {
-				$this->empty = true;
-				$this->subjectHtml = $result->subject;
-				if ($result->parent) {
-					$this->subjectHtml = 'Re: '.$this->subjectHtml;
-				}
+			$exception = $this->message->tryAuthorise('read', null, false);
 
-				$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
-
+			if ($exception) {
+				$status = $exception->getResponseStatus();
+				JLog::add("ElasticSearch Error: Message: {$this->message->id} with {$status}", JLog::ERROR, 'kunena');
+				$contents = $this->subLayout('Elasticsearch/Results/Row')->setLayout('missing');
 			} else {
+
 				$this->empty = false;
 				$highlights = $result->getHighlights();
 
@@ -63,10 +61,12 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 				$this->author = $this->message->getAuthor();
 				$this->topicAuthor = $this->topic->getAuthor();
 				$this->topicTime = $this->topic->first_post_time;
+				$contents = $this->subLayout('Elasticsearch/Results/Row')->setProperties($this->getProperties());
+				
 			}
-
-			$contents = $this->subLayout('Elasticsearch/Results/Row')->setProperties($this->getProperties());
 			echo $contents;
+			
+			
 		}
 	}
 
