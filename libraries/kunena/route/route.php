@@ -30,7 +30,7 @@ abstract class KunenaRoute {
 		'home'=>array(),
 		'misc'=>array('layout'=>'default'),
 		'search'=>array('layout'=>'default'),
-		'elasticserach'=>array('layout'=>'default'),
+		'elasticsearch'=>array('layout'=>'default'),
 		'statistics'=>array('layout'=>'default'),
 		'topic'=>array('layout'=>'default'),
 		'topics'=>array('layout'=>'default'),
