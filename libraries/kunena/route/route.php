@@ -30,6 +30,7 @@ abstract class KunenaRoute {
 		'home'=>array(),
 		'misc'=>array('layout'=>'default'),
 		'search'=>array('layout'=>'default'),
+		'elasticsearch'=>array('layout'=>'default'),
 		'statistics'=>array('layout'=>'default'),
 		'topic'=>array('layout'=>'default'),
 		'topics'=>array('layout'=>'default'),
@@ -443,6 +444,7 @@ abstract class KunenaRoute {
 			case 'home':
 			case 'misc':
 			case 'search':
+			case 'elasticsearch':
 			case 'statistics':
 			case 'topic':
 			case 'topics':
