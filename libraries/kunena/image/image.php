@@ -27,7 +27,7 @@ class KunenaImage extends JImage
 	 *                                 the current image will be resized and returned.
 	 * @param   integer  $scaleMethod  Which method to use for scaling
 	 *
-	 * @return  JImage
+	 * @return  KunenaImage
 	 *
 	 * @since   11.3
 	 * @throws  LogicException
@@ -109,11 +109,11 @@ class KunenaImage extends JImage
 
 		$resizemethod($handle, $this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight());
 
-		// If we are resizing to a new image, create a new JImage object.
+		// If we are resizing to a new image, create a new KunenaImage object.
 		if ($createNew)
 		{
 			// @codeCoverageIgnoreStart
-			$new = new JImage($handle);
+			$new = new KunenaImage($handle);
 
 			return $new;
 
