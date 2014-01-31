@@ -10,6 +10,9 @@
  **/
 defined('_JEXEC') or die;
 
+define('MIME_GIF','image/gif');
+define('MIME_PNG','image/png');
+
 /**
  * Helper class for image manipulation.
  */
@@ -65,14 +68,15 @@ class KunenaImage extends JImage
 		$offset = new stdClass;
 		$offset->x = $offset->y = 0;
 
+		// Get truecolor handle
+		$handle = imagecreatetruecolor($dimensions->width, $dimensions->height);
+
 		// Center image if needed and create the new truecolor image handle.
 		if ($scaleMethod == self::SCALE_FIT)
 		{
 			// Get the offsets
 			$offset->x	= round(($width - $dimensions->width) / 2);
 			$offset->y	= round(($height - $dimensions->height) / 2);
-
-			$handle = imagecreatetruecolor($width, $height);
 
 			// Make image transparent, otherwise cavas outside initial image would default to black
 			if (!$this->isTransparent())
@@ -81,18 +85,26 @@ class KunenaImage extends JImage
 				imagecolorTransparent($this->handle, $transparency);
 			}
 		}
-		else
-		{
-			$handle = imagecreatetruecolor($dimensions->width, $dimensions->height);
-		}
 
-		// Allow transparency for the new image handle.
-		imagealphablending($handle, false);
-		imagesavealpha($handle, true);
-		if ($this->isTransparent())
-		{
-            $transparent = imagecolorallocatealpha($this->handle, 255, 255, 255, 127);
-            imagefilledrectangle($this->handle, 0, 0, $width, $height, $transparent);
+		$imgProperties = self::getImageFileProperties($this->getPath());
+
+		if ($imgProperties->mime == MIME_GIF) {
+			$trnprt_indx = imagecolortransparent($this->handle);
+			
+			if ($trnprt_indx >= 0 && $trnprt_indx < imagecolorstotal($this->handle)) {
+				$trnprt_color   = imagecolorsforindex($this->handle, $trnprt_indx);
+				$trnprt_indx    = imagecolorallocate($handle, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);	
+				imagefill($handle, 0, 0, $trnprt_indx);				
+				imagecolortransparent($handle, $trnprt_indx);
+			}
+		} elseif ($imgProperties->mime == MIME_PNG) {
+			imagealphablending($handle, false);
+			imagesavealpha($handle, true);
+			if ($this->isTransparent())
+			{
+	            $transparent = imagecolorallocatealpha($this->handle, 255, 255, 255, 127);
+	            imagefilledrectangle($this->handle, 0, 0, $width, $height, $transparent);
+			}			
 		}
 
 		$resizemethod($handle, $this->handle, $offset->x, $offset->y, 0, 0, $dimensions->width, $dimensions->height, $this->getWidth(), $this->getHeight());
