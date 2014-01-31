@@ -118,6 +118,13 @@ class KunenaPrivateMessage extends KunenaDatabaseObject
 	protected function saveInternal() {
 		if (!is_null($this->_attachments)) {
 			$this->_attachments->setKey($this->id)->save();
+			$ids = $this->_attachments->getMapped();
+			$attachments = KunenaForumMessageAttachmentHelper::getById($ids, 'none');
+
+			foreach ($attachments as $attachment) {
+				$attachment->protected = KunenaForumMessageAttachment::PROTECTION_PRIVATE;
+				$attachment->save();
+			}
 		}
 		if (!is_null($this->_posts)) {
 			$this->_posts->setKey($this->id)->save();

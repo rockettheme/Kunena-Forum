@@ -99,7 +99,8 @@ abstract class KunenaForumMessageAttachmentHelper {
 			if (!empty(self::$_messages [$id])) {
 				foreach (self::$_messages [$id] as $instance) {
 					/** @var KunenaForumMessageAttachment $instance */
-					if ($instance->authorise($authorise, null, true)) {
+					if ($instance->authorise($authorise, null, true)
+						&& $instance->protected < KunenaForumMessageAttachment::PROTECTION_ACL * 2) {
 						$list [$instance->id] = $instance;
 					}
 				}

@@ -30,6 +30,7 @@ class KunenaForumMessageAttachment extends JObject {
 	// Protection level can be checked as bitmask: PROTECTION_ACL + PROTECTION_FRIENDS.
 	// To filter out attachments when doing a database query, you can use:
 	// Visible for author = value < PROTECTION_AUTHOR * 2
+	// TODO: Implement these
 	const PROTECTION_NONE = 0;
 	const PROTECTION_PUBLIC = 1;
 	const PROTECTION_ACL = 2;
@@ -263,23 +264,44 @@ class KunenaForumMessageAttachment extends JObject {
 			throw new InvalidArgumentException(JText::sprintf('COM_KUNENA_LIB_AUTHORISE_INVALID_ACTION', $action), 500);
 		}
 
-		// Check if attachment is private.
-		if ($this->protected & KunenaForumMessageAttachment::PROTECTION_PRIVATE)
-		{
-			$exception = $this->authorisePrivate($user);
-		}
-		else
+		// Start by checking if attachment is protected.
+		$exception = !$this->protected ? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $user->id ? 403 : 401);
+
+		// TODO: Add support for PROTECTION_PUBLIC
+
+		// Currently we only support ACL checks, not public attachments.
+		if ($exception && $this->mesid && $this->protected & (self::PROTECTION_PUBLIC + self::PROTECTION_ACL))
 		{
 			// Load message authorisation.
 			$exception = $this->getMessage()->tryAuthorise('attachment.'.$action, $user, false);
+		}
 
-			// Check authorisation.
-			if (!$exception) {
-				foreach (self::$actions[$action] as $function) {
-					$authFunction = 'authorise'.$function;
-					$exception = $this->$authFunction($user);
-					if ($exception) break;
-				}
+		// TODO: Add support for PROTECTION_FRIENDS
+		// TODO: Add support for PROTECTION_MODERATORS
+		// TODO: Add support for PROTECTION_ADMINS
+
+		// Check if attachment is private.
+		if ($exception && $this->protected & self::PROTECTION_PRIVATE)
+		{
+			$exception = $this->authorisePrivate($user);
+		}
+
+		// Check author access.
+		if ($exception && $this->protected & self::PROTECTION_AUTHOR)
+		{
+			$exception = $user->exists() && $user->id == $this->userid
+				? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $user->userid ? 403 : 401);
+		}
+
+		if ($exception) {
+			// Hide original exception behind no access.
+			$exception = new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $user->userid ? 403 : 401, $exception);
+		} else {
+			// Check authorisation action.
+			foreach (self::$actions[$action] as $function) {
+				$authFunction = 'authorise'.$function;
+				$exception = $this->$authFunction($user);
+				if ($exception) break;
 			}
 		}
 
@@ -559,7 +581,7 @@ class KunenaForumMessageAttachment extends JObject {
 	{
 		if (!$user->exists())
 		{
-			return new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 401);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 401);
 		}
 
 		// Need to load private message (for now allow only one private message per attachment).
@@ -571,7 +593,7 @@ class KunenaForumMessageAttachment extends JObject {
 
 		if (!$private->exists())
 		{
-			return new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 404);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
 		}
 
 		if (in_array($user->userid, $private->users()->getMapped()))
@@ -593,7 +615,7 @@ class KunenaForumMessageAttachment extends JObject {
 			}
 		}
 
-		return new RuntimeException(JText::_('COM_KUNENA_NO_ACCESS'), 403);
+		return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
 	}
 
 	protected function check() {
@@ -643,16 +665,12 @@ class KunenaForumMessageAttachment extends JObject {
 	/**
 	 * @param KunenaUser $user
 	 *
-	 * @return bool
+	 * @return KunenaExceptionAuthorise|null
 	 */
 	protected function authoriseRead(KunenaUser $user) {
 		// Checks if attachment exists
 		if (!$this->exists()) {
 			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 404);
-		}
-		// Only authorise Public and ACL controlled attachments.
-		if ($this->protected >= static::PROTECTION_ACL * 2) {
-			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
 		}
 		// FIXME: authorisation for guests is missing, but needs a few changes in the code in order to work.
 		/*
@@ -673,7 +691,7 @@ class KunenaForumMessageAttachment extends JObject {
 	/**
 	 * @param KunenaUser $user
 	 *
-	 * @return bool
+	 * @return KunenaExceptionAuthorise|null
 	 */
 	protected function authoriseOwn(KunenaUser $user) {
 		// Checks if attachment is users own or user is moderator in the category (or global)
