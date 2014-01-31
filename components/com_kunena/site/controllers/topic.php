@@ -101,7 +101,7 @@ class KunenaControllerTopic extends KunenaController {
 				// Resize image if needed.
 				if ($attachment->isImage())
 				{
-					$imageInfo = JImage::getImageFileProperties($uploadFile);
+					$imageInfo = KunenaImage::getImageFileProperties($uploadFile);
 					$config = KunenaConfig::getInstance();
 
 					if ($imageInfo->width > $config->imagewidth || $imageInfo->height > $config->imageheight)
@@ -111,7 +111,7 @@ class KunenaControllerTopic extends KunenaController {
 						if ($quality < 1 || $quality > 100) $quality = 70;
 						if ($imageInfo->type == IMAGETYPE_PNG) $quality = intval(($quality-1)/10);
 
-						$image = new JImage($uploadFile);
+						$image = new KunenaImage($uploadFile);
 						$image = $image->resize($config->imagewidth, $config->imageheight, false);
 
 						$options = array('quality' => $quality);
