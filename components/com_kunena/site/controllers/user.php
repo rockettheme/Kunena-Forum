@@ -85,6 +85,8 @@ class KunenaControllerUser extends KunenaController {
 	 */
 	public function save()
 	{
+		$return = null;
+
 		if (!JSession::checkToken('post'))
 		{
 			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ERROR_TOKEN'), 403);
@@ -111,8 +113,13 @@ class KunenaControllerUser extends KunenaController {
 		// Save avatar.
 		$success = $this->saveAvatar();
 
-		if (!$success)
-		{
+		if ($success && $this->format == 'json') {
+			// Pre-create both 28px and 100px avatars so we have them available for AJAX
+			$avatars = array();
+			$avatars['small'] = $this->me->getAvatarUrl(28, 28);
+			$avatars['medium'] = $this->me->getAvatarUrl(100, 100); 
+			$return = array('avatars',$avatars);
+		} else 	{
 			$errors++;
 			$this->app->enqueueMessage(JText::_('COM_KUNENA_PROFILE_AVATAR_NOT_SAVED'), 'error');
 		}
@@ -139,6 +146,7 @@ class KunenaControllerUser extends KunenaController {
 		}
 
 		$this->app->enqueueMessage(JText::_('COM_KUNENA_PROFILE_SAVED'));
+		if ($return) return $return;
 	}
 
 	function ban() {
