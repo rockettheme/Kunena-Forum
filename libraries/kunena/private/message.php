@@ -119,10 +119,10 @@ class KunenaPrivateMessage extends KunenaDatabaseObject
 		if (!is_null($this->_attachments)) {
 			$this->_attachments->setKey($this->id)->save();
 			$ids = $this->_attachments->getMapped();
-			$attachments = KunenaForumMessageAttachmentHelper::getById($ids, 'none');
+			$attachments = KunenaAttachmentHelper::getById($ids, 'none');
 
 			foreach ($attachments as $attachment) {
-				$attachment->protected = KunenaForumMessageAttachment::PROTECTION_PRIVATE;
+				$attachment->protected = KunenaAttachment::PROTECTION_PRIVATE;
 				$attachment->save();
 			}
 		}

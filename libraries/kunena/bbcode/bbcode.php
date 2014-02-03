@@ -1768,7 +1768,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 		if ($bbcode->parent instanceof KunenaForumMessage) {
 			$attachments = $bbcode->parent->getAttachments();
 		} elseif ($bbcode->parent instanceof KunenaPrivateMessage) {
-			$attachments = KunenaForumMessageAttachmentHelper::getById($bbcode->parent->attachments()->getMapped());
+			$attachments = KunenaAttachmentHelper::getById($bbcode->parent->attachments()->getMapped());
 		} elseif (is_object($bbcode->parent) && isset($bbcode->parent->attachments) && is_array($bbcode->parent->attachments)) {
 			$attachments = &$bbcode->parent->attachments;
 		}
@@ -1985,7 +1985,7 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 			$filename = basename($fileurl);
 
 			// Remove attachment from the attachments list and show it if it exists
-			/** @var array|KunenaForumMessageAttachment[] $attachments */
+			/** @var array|KunenaAttachment[] $attachments */
 			$attachments = &$bbcode->parent->attachments;
 			$attachment = null;
 			foreach ( $attachments as $att ) {

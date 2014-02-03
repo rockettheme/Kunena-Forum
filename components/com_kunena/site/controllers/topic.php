@@ -332,11 +332,11 @@ class KunenaControllerTopic extends KunenaController {
 		$attachment_private = JRequest::getVar ( 'attachment_private', array(), 'post', 'array' );
 		$message->addAttachments(
 			array_keys(array_intersect_key($attachments, $attachment)),
-			KunenaForumMessageAttachment::PROTECTION_PUBLIC
+			KunenaAttachment::PROTECTION_PUBLIC
 		);
 		$message->addAttachments(
 			array_keys(array_intersect_key($attachments, $attachment_private)),
-			KunenaForumMessageAttachment::PROTECTION_PRIVATE
+			KunenaAttachment::PROTECTION_PRIVATE
 		);
 		$message->removeAttachments(array_keys(array_diff_key($attachments, $attachment + $attachment_private)));
 
@@ -504,11 +504,11 @@ class KunenaControllerTopic extends KunenaController {
 		$attachment_private = JRequest::getVar ( 'attachment_private', array(), 'post', 'array' );
 		$message->addAttachments(
 			array_keys(array_intersect_key($attachments, $attachment)),
-			KunenaForumMessageAttachment::PROTECTION_PUBLIC
+			KunenaAttachment::PROTECTION_PUBLIC
 		);
 		$message->addAttachments(
 			array_keys(array_intersect_key($attachments, $attachment_private)),
-			KunenaForumMessageAttachment::PROTECTION_PRIVATE
+			KunenaAttachment::PROTECTION_PRIVATE
 		);
 		$message->removeAttachments(array_keys(array_diff_key($attachments, $attachment + $attachment_private)));
 

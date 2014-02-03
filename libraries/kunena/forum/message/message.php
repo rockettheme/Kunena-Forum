@@ -656,11 +656,11 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 */
 	public function addAttachments(array $ids, $protection = null)
 	{
-		$protection = ($protection ? $protection : KunenaForumMessageAttachment::PROTECTION_PUBLIC);
+		$protection = ($protection ? $protection : KunenaAttachment::PROTECTION_PUBLIC);
 
 		$attachments = new KunenaCollection($this->getAttachments($ids, 'none'));
 		$attachments->each(
-			function (KunenaForumMessageAttachment $item) use ($protection)
+			function (KunenaAttachment $item) use ($protection)
 			{
 				$item->protected = $protection;
 			}
