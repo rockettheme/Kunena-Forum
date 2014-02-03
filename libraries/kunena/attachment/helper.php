@@ -115,7 +115,7 @@ abstract class KunenaAttachmentHelper {
 			if (!empty(self::$_messages [$id])) {
 				foreach (self::$_messages [$id] as $instance) {
 					/** @var KunenaAttachment $instance */
-					if ($instance->isAuthorised($authorise)) {
+					if ($instance->isAuthorised($authorise) && $instance->protected < KunenaAttachment::PROTECTION_ACL * 2) {
 						$list [$instance->id] = $instance;
 					}
 				}
