@@ -372,7 +372,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 		}
 
 		// Start by checking if attachment is protected.
-		$exception = !$this->protected ? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $user->id ? 403 : 401);
+		$exception = !$this->protected ? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), $user->id ? 403 : 401);
 
 		// TODO: Add support for PROTECTION_PUBLIC
 
@@ -397,12 +397,12 @@ class KunenaAttachment extends KunenaDatabaseObject
 		if ($exception && $this->protected & self::PROTECTION_AUTHOR)
 		{
 			$exception = $user->exists() && $user->id == $this->userid
-				? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $user->userid ? 403 : 401);
+				? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), $user->userid ? 403 : 401);
 		}
 
 		if ($exception) {
 			// Hide original exception behind no access.
-			$exception = new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $user->userid ? 403 : 401, $exception);
+			$exception = new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), $user->userid ? 403 : 401, $exception);
 		} else {
 			// Check authorisation action.
 			foreach (self::$actions[$action] as $function)
@@ -633,7 +633,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 	{
 		if (!$user->exists())
 		{
-			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 401);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 401);
 		}
 
 		// Need to load private message (for now allow only one private message per attachment).
@@ -645,7 +645,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 
 		if (!$private->exists())
 		{
-			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 403);
 		}
 
 		if (in_array($user->userid, $private->users()->getMapped()))
@@ -667,7 +667,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 			}
 		}
 
-		return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
+		return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 403);
 	}
 
 	/**
@@ -682,7 +682,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 		// Checks if attachment exists
 		if (!$this->exists())
 		{
-			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 404);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 404);
 		}
 
 		return null;
@@ -700,7 +700,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 		// Checks if attachment exists
 		if (!$this->exists())
 		{
-			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 404);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 404);
 		}
 
 		if (!$user->exists())
@@ -733,7 +733,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 		// Checks if attachment is users own or user is moderator in the category (or global)
 		if (($user->userid && $this->userid != $user->userid) && !$user->isModerator($this->getMessage()->getCategory()))
 		{
-			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 403);
+			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 403);
 		}
 
 		return null;
