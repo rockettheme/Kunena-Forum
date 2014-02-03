@@ -90,6 +90,8 @@ class KunenaTemplate extends JObject
 		// Create template inheritance
 		if (!is_array($this->default)) $this->default = (array) $this->default;
 		array_unshift($this->default, $name);
+		array_unshift($this->default, 'system');
+
 		$this->default = array_unique($this->default);
 
 		// Find configuration file.
@@ -337,10 +339,12 @@ HTML;
 	}
 
 	public function getTemplatePaths($path = '', $fullpath = false) {
+		$app = JFactory::getApplication();
 		if ($path) $path = KunenaPath::clean("/$path");
 		$array = array();
 		foreach (array_reverse($this->default) as $template) {
-			$array[] = ($fullpath ? KPATH_SITE : KPATH_COMPONENT_RELATIVE).'/template/'.$template.$path;
+			$array[] = ($fullpath ? KPATH_SITE : KPATH_COMPONENT_RELATIVE)."/template/".$template.$path;
+			$array[] = ($fullpath ? JPATH_ROOT : JPATH_SITE)."/templates/{$app->getTemplate()}/html/com_kunena".$path;
 		}
 		foreach (array_reverse($this->paths) as $template) {
 			$array[] = ($fullpath ? JPATH_SITE : '').$template.$path;
@@ -558,8 +562,13 @@ HTML;
 	}
 
 	public function isHmvc() {
+		$app = JFactory::getApplication();
 		if (is_null($this->hmvc)) {
-			$this->hmvc = is_dir(KPATH_SITE . "/template/{$this->name}/pages");
+			if (is_dir(JPATH_THEMES."/{$app->getTemplate()}/com_kunena/pages")) {
+				$this->hmvc = is_dir(JPATH_THEMES."/{$app->getTemplate()}/com_kunena/pages");
+			} else {
+				$this->hmvc = is_dir(KPATH_SITE . "/template/{$this->name}/pages");
+			}
 		}
 		return $this->hmvc;
 	}
@@ -585,6 +594,7 @@ HTML;
 			if (!is_file(KPATH_SITE . "/template/{$templatename}/template.xml")
 				&& !is_file(KPATH_SITE . "/template/{$templatename}/config.xml")) {
 				// If template xml doesn't exist, raise warning and use blue eagle instead
+				$file = JPATH_THEMES."/{$app->getTemplate()}/html/com_kunena/template.php";
 				$templatename = 'blue_eagle';
 				$classname = "KunenaTemplate{$templatename}";
 

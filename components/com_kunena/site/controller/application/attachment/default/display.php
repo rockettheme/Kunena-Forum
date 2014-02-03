@@ -97,19 +97,19 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_LOGIN_NOTIFICATION'), 403);
 		}
 
-		$attachment = KunenaForumMessageAttachmentHelper::get($id);
+		$attachment = KunenaAttachmentHelper::get($id);
 		$attachment->tryAuthorise();
 
-		$path = JPATH_ROOT . '/' . $attachment->folder . '/thumb/' . $attachment->filename;
+		$path = $attachment->getPath($thumb);
 
-		if (!$thumb || !is_file($path))
+		if ($thumb && !$path)
 		{
-			$path = JPATH_ROOT . '/' . $attachment->folder . '/' . $attachment->filename;
+			$path = $attachment->getPath(false);
 		}
 
-		if (!is_file($path))
+		if (!$path)
 		{
-			// Forum is for registered users only.
+			// File doesn't exist.
 			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), 404);
 		}
 
@@ -136,18 +136,13 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 			}
 		}
 
-		// Safety check, just in case..
-		if (!$attachment->filename_real)
-		{
-			$attachment->filename_real = $attachment->filename;
-		}
 
 		// Set file headers.
 		header('ETag: ' . $attachment->hash);
 		header('Pragma: public');
 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($path)) . ' GMT');
 
-		if (!$download && $attachment->isImage($attachment->filetype))
+		if (!$download && $attachment->isImage())
 		{
 			// By default display images inline.
 			$guest = new KunenaUser;
@@ -167,7 +162,7 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 			}
 
 			header('Content-type: ' . $attachment->filetype);
-			header('Content-Disposition: inline; filename="' . $attachment->filename_real . '"');
+			header('Content-Disposition: inline; filename="' . $attachment->getFilename(false) . '"');
 		}
 		else
 		{
@@ -178,7 +173,7 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 			header('Content-Type: application/force-download');
 			header('Content-Type: application/octet-stream');
 			header('Content-Type: application/download');
-			header('Content-Disposition: attachment; filename="' . $attachment->filename_real . '"');
+			header('Content-Disposition: attachment; filename="' . $attachment->getFilename(false) . '"');
 		}
 
 		header('Content-Transfer-Encoding: binary');
@@ -187,6 +182,9 @@ class ComponentKunenaControllerApplicationAttachmentDefaultDisplay extends Kunen
 
 		// Output the file contents.
 		@readfile($path);
+		flush();
+
+		$this->app->close();
 	}
 
 	/**

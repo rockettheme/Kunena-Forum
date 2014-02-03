@@ -93,7 +93,7 @@ class ComponentKunenaControllerTopicFormReplyDisplay extends KunenaControllerDis
 		$this->privateMessage = new KunenaPrivateMessage;
 		$this->privateMessage->body = $saved ? $saved['private'] : $this->privateMessage->body;
 
-		$this->allowedExtensions = KunenaForumMessageAttachmentHelper::getExtensions($this->category);
+		$this->allowedExtensions = KunenaAttachmentHelper::getExtensions($this->category);
 
 		$this->post_anonymous = $saved ? $saved['anonymous'] : ! empty ( $this->category->post_anonymous );
 		$this->subscriptionschecked = $saved ? $saved['subscribe'] : $this->config->subscriptionschecked == 1;
