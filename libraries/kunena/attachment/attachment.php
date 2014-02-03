@@ -174,6 +174,22 @@ class KunenaAttachment extends KunenaDatabaseObject
 		return $escape ? htmlspecialchars($filename, ENT_COMPAT, 'UTF-8') : $filename;
 	}
 
+	/**
+	 * Get extension of file for output.
+	 *
+	 * @param bool $escape
+	 *
+	 * @return string
+	 *
+	 * @since 3.1
+	 */
+	public function getExtension($escape = true)
+	{
+		$filename  = $this->protected ? $this->filename_real : $this->filename;
+		$extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+		return $escape ? htmlspecialchars($extension, ENT_COMPAT, 'UTF-8') : $extension;
+	}
 
 	/**
 	 * This function shortens long filenames for display purposes.
