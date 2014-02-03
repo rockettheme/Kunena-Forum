@@ -35,6 +35,7 @@ class KunenaAvatarKunena extends KunenaAvatar {
 		$avatar = $user->avatar;
 		$config = KunenaFactory::getConfig();
 
+		$timestamp = '';
 		$path = KPATH_MEDIA ."/avatars";
 		$origPath = "{$path}/{$avatar}";
 		if ( !is_file($origPath)) {
@@ -57,7 +58,8 @@ class KunenaAvatarKunena extends KunenaAvatar {
 
 		if ( !is_file( "{$path}/{$resized}/{$file}" ) ) {
 			KunenaImageHelper::version($origPath, "{$path}/{$resized}", $file, $sizex, $sizey, intval($config->avatarquality), KunenaImage::SCALE_INSIDE, intval($config->avatarcrop));
+			$timestamp = '?'.round(microtime(true));
 		}
-		return KURL_MEDIA . "avatars/{$resized}/{$file}";
+		return KURL_MEDIA . "avatars/{$resized}/{$file}{$timestamp}";
 	}
 }
