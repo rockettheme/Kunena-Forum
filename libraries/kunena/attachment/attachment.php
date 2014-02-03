@@ -183,7 +183,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 	 *
 	 * @since 3.1
 	 */
-	public function getFileExtension($escape = true)
+	public function getExtension($escape = true)
 	{
 		$filename  = $this->protected ? $this->filename_real : $this->filename;
 		$extension = pathinfo($filename, PATHINFO_EXTENSION);
