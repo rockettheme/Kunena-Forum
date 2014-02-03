@@ -238,8 +238,9 @@ class KunenaAttachment extends KunenaDatabaseObject
 		// Route attachment through Kunena.
 		$thumb = $thumb ? '&thumb=1' : '';
 		$download = $inline ? '' : '&download=1';
+		$filename = urlencode($this->getFilename(false));
 
-		return KunenaRoute::_("index.php?option=com_kunena&view=attachment&id={$this->id}{$thumb}{$download}&format=raw", $escape);
+		return KunenaRoute::_("index.php?option=com_kunena&view=attachment&id={$this->id}{$thumb}{$download}&filename={$filename}&format=raw", $escape);
 	}
 
 	/**

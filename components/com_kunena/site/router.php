@@ -141,7 +141,7 @@ function KunenaBuildRoute(&$query) {
 		if ($view == 'attachment') {
 			if (!empty($query['id'])) {
 				// Use filtered value
-				$segments [] = $query['id'];
+				$segments [] = (int) $query['id'];
 				unset($query['id']);
 			}
 			if (!empty($query['thumb'])) {
@@ -150,6 +150,11 @@ function KunenaBuildRoute(&$query) {
 				unset($query['thumb']);
 			}
 			unset($query['format']);
+
+			if (!empty($query['filename'])) {
+				$segments [] = $query['filename'];
+				unset($query['filename']);
+			}
 		}
 	}
 
