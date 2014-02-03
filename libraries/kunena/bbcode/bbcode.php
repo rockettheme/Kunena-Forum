@@ -1972,42 +1972,15 @@ class KunenaBbcodeLibrary extends BBCodeLibrary {
 					if (! preg_match ( '`^(/|https?://)`', $fileurl )) {
 						$fileurl = 'http://' . $fileurl;
 					}
-					return "<a href=\"" . $fileurl . "\" rel=\"nofollow\" target=\"_blank\">" . $fileurl . '</a>';
+					// TODO: call URL layout instead..
+					return "<a href=\"" . $bbcode->HTMLEncode($fileurl) . "\" rel=\"nofollow\" target=\"_blank\">" . $bbcode->HTMLEncode($fileurl) . '</a>';
 				} else {
 					return $bbcode->HTMLEncode($fileurl);
 				}
 			}
 		}
 
-		// Legacy attachments support (mostly used to remove image from attachments list), but also fixes broken links
-		if (isset ( $bbcode->parent->attachments ) && strpos ( $fileurl, '/media/kunena/attachments/legacy/images/' )) {
-			// Make sure that filename does not contain path or URL
-			$filename = basename($fileurl);
-
-			// Remove attachment from the attachments list and show it if it exists
-			/** @var array|KunenaAttachment[] $attachments */
-			$attachments = &$bbcode->parent->attachments;
-			$attachment = null;
-			foreach ( $attachments as $att ) {
-				if ($att->filename == $filename && $att->folder == 'media/kunena/attachments/legacy/images') {
-					$attachment = $att;
-					unset ( $attachments [$att->id] );
-					$bbcode->parent->inline_attachments [$attachment->id] = $attachment;
-					return "<div class=\"kmsgimage\">{$attachment->getImageLink()}</div>";
-				}
-			}
-			// No match -- assume that we have normal img tag
-		}
-
-		// Make sure we add image size if specified
-		$width = ($params ['size'] ? ' width="' . (int) $params ['size'] . '"' : '');
-		$fileurl = $bbcode->HTMLEncode ( $fileurl );
-
-		// Need to check if we are nested inside a URL code
-		if ($bbcode->autolink_disable == 0 && $config->lightbox) {
-			return '<div class="kmsgimage"><a href="'.$fileurl.'" title="" rel="lightbox[gallery]"><img src="'.$fileurl.'"'.$width.' style="max-height:'.$config->imageheight.'px;" alt="" /></a></div>';
-		}
-		return '<div class="kmsgimage"><img src="' . $fileurl .'"'. $width .' style="max-height:'.$config->imageheight.'px;" alt="" /></div>';
+		return (string) $layout->set('url', $fileurl);
 	}
 
 	public function DoTerminal($bbcode, $action, $name, $default, $params, $content)
