@@ -392,17 +392,26 @@ class KunenaModelElasticsearch extends KunenaModel {
 			$dateFilter->addField('created', array($prefix => $time));
 		}
 
-
 		// Username filter
-		$username = $this->getState('query.searchuser');
+		$username = strtolower($this->getState('query.searchuser'));
 		if ($username) {
 			$userFilter = new Elastica\Filter\BoolOr();
-			$f1 = new Elastica\Filter\Term();
-        	$f1->setTerm('name', $username);	
-        	$f2 = new Elastica\Filter\Term();
-        	$f2->setTerm('username',$username);
-        	$userFilter->addFilter($f1);
-        	$userFilter->addFilter($f2);
+			$username_terms = explode(' ', $username);
+			if (count($username_terms) > 1) {
+				$f1 = new Elastica\Filter\Terms();
+				$f2 = new Elastica\Filter\Terms();
+				$f1->setTerms('name',$username_terms);
+				$f2->setTerms('username',$username_terms);
+				$f1->setParam('execution','and');
+				$f2->setParam('execution','and');
+			} else {
+				$f1 = new Elastica\Filter\Term();
+				$f2 = new Elastica\Filter\Term();
+				$f1->setTerm('name', $username_terms[0]);	
+				$f2->setTerm('username',$username_terms[0]);
+			}
+			$userFilter->addFilter($f1);
+			$userFilter->addFilter($f2);
 		}
 
 		// Published filter check
