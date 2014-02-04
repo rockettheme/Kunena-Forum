@@ -372,7 +372,8 @@ class KunenaAttachment extends KunenaDatabaseObject
 		}
 
 		// Start by checking if attachment is protected.
-		$exception = !$this->protected ? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), $user->id ? 403 : 401);
+		$exception = !$this->protected
+			? null : new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), $user->id ? 403 : 401);
 
 		// TODO: Add support for PROTECTION_PUBLIC
 
@@ -390,7 +391,7 @@ class KunenaAttachment extends KunenaDatabaseObject
 		// Check if attachment is private.
 		if ($exception && $this->protected & self::PROTECTION_PRIVATE)
 		{
-			$exception = $this->authorisePrivate($user);
+			$exception = $this->authorisePrivate($action, $user);
 		}
 
 		// Check author access.
@@ -629,11 +630,16 @@ class KunenaAttachment extends KunenaDatabaseObject
 		}
 	}
 
-	protected function authorisePrivate(KunenaUser $user)
+	protected function authorisePrivate($action, KunenaUser $user)
 	{
 		if (!$user->exists())
 		{
 			return new KunenaExceptionAuthorise(JText::_('COM_KUNENA_ATTACHMENT_NO_ACCESS'), 401);
+		}
+
+		if ($action == 'create')
+		{
+			return null;
 		}
 
 		// Need to load private message (for now allow only one private message per attachment).
