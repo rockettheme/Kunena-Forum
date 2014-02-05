@@ -20,6 +20,8 @@ class KunenaAvatarKunena extends KunenaAvatar {
 
 	public function load($userlist)
 	{
+		if (!class_exists('RokClubAccess')) return;
+
 		// TODO: Move to RokClub plugin
 		// Set ranks for RocketTheme team.
 		static $team;
