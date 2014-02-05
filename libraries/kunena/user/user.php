@@ -554,26 +554,6 @@ class KunenaUser extends JObject {
 
 		$userType = $special !== false ? $this->getType($catid, true) : 'count';
 
-		// Set ranks for RocketTheme team.
-		if ($special) {
-			static $userids;
-
-			if ($userids === null) {
-				$userids = KunenaUserHelper::getGroupsForUsers(array(11,12,13));
-			}
-
-			if (isset($userids[$this->userid][11])) {
-				// Kahuna
-				$this->rank = 16;
-			} elseif (isset($userids[$this->userid][12])) {
-				// Core Team
-				$this->rank = 11;
-			} elseif (isset($userids[$this->userid][13])) {
-				// Mod Squad
-				$this->rank = 12;
-			}
-		}
-
 		if (isset(self::$_ranks[$this->rank]) && !in_array($userType, array('guest', 'blocked', 'banned', 'count'))) {
 			// Use rank specified to the user.
 			$rank = self::$_ranks[$this->rank];

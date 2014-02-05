@@ -21,7 +21,39 @@ class KunenaAvatarKunena extends KunenaAvatar {
 	public function load($userlist)
 	{
 		// TODO: Move to RokClub plugin
-		if (KunenaUserHelper::getMyself()->isModerator()) RokClubSubscription::loadUserStatuses($userlist);
+		// Set ranks for RocketTheme team.
+		static $team;
+		static $devclub;
+
+		if ($team === null) {
+			$team = KunenaUserHelper::getGroupsForUsers(array(11, 12, 13));
+		}
+
+		if ($devclub === null) {
+			$access = RokClubAccess::getInstance();
+			$devclub = $access->getAuthorisedUsers(array(5, 6, 9, 13));
+		}
+
+		if (KunenaUserHelper::getMyself()->isModerator()) {
+			RokClubSubscription::loadUserStatuses($userlist);
+		}
+
+		foreach ($userlist as $userid) {
+			$user = KunenaUserHelper::get($userid);
+			if (isset($team[$user->userid][11])) {
+				// Kahuna
+				$user->rank = 16;
+			} elseif (isset($team[$user->userid][12])) {
+				// Core Team
+				$user->rank = 11;
+			} elseif (isset($team[$user->userid][13])) {
+				// Mod Squad
+				$user->rank = 12;
+			} elseif (in_array($user->userid, $devclub)) {
+				// Developer Club member
+				$user->rank = 13;
+			}
+		}
 	}
 
 	public function getEditURL()
