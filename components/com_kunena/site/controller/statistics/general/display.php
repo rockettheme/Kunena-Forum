@@ -32,9 +32,14 @@ class ComponentKunenaControllerStatisticsGeneralDisplay extends KunenaController
 
 		$this->config = KunenaConfig::getInstance();
 
-		if (!$this->config->get('showstats') || (!$this->config->get('showstats_to_guests') && !KunenaUserHelper::get()->exists()))
+		if (!$this->config->get('showstats'))
 		{
 			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), '404');
+		}
+
+		if (!$this->config->get('showstats_to_guests') && !KunenaUserHelper::getMyself()->exists())
+		{
+			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), '401');
 		}
 
 		$statistics = KunenaForumStatistics::getInstance();
