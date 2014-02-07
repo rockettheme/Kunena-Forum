@@ -24,6 +24,10 @@ abstract class KunenaError {
 			self::$format = JFactory::getApplication()->input->getWord('format', 'html');
 			self::$debug = JDEBUG || KunenaFactory::getConfig ()->debug;
 			self::$admin = JFactory::getApplication()->isAdmin();
+
+			// Make sure we are able to log fatal errors.
+			class_exists('KunenaLog');
+
 			register_shutdown_function(array('KunenaError', 'shutdownHandler'), self::$debug || self::$admin || KUNENA_PROFILER);
 			if (!self::$debug) return;
 
@@ -138,6 +142,8 @@ abstract class KunenaError {
 
 		if ($error && in_array($error['type'], $types))
 		{
+			KunenaLog::log(KunenaLog::TYPE_ERROR, KunenaLog::LOG_ERROR_FATAL, $error);
+
 			if ($debug)
 			{
 				// Clean up file path (take also care of some symbolic links).
@@ -251,5 +257,8 @@ abstract class KunenaError {
 	</body>
 	</html>';
 		}
+
+		// Flush Kunena Logger if it was used.
+		KunenaLog::flush();
 	}
 }
