@@ -127,4 +127,3 @@ if (KUNENA_PROFILER) {
 	}
 	echo '</div>';
 }
-bbb();
