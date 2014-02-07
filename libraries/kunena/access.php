@@ -412,7 +412,7 @@ window.addEvent('domready', function(){
 				$list = array_keys($list);
 				JArrayHelper::toInteger($list);
 				$read[$id] = array_combine($list, $list);
-				unset($list[0]);
+				unset($read[$id][0]);
 				$app->setUserState("com_kunena.user{$id}_read", $read[$id]);
 			}
 		}
