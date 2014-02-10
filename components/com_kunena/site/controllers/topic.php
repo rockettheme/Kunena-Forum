@@ -179,6 +179,16 @@ class KunenaControllerTopic extends KunenaController {
 			if ($pAuthor->exists()) $private->users()->add($pAuthor->userid);
 		}
 		$private->attachments()->setMapped($attachIds);
+
+		KunenaLog::log(
+			KunenaLog::TYPE_ACTION,
+			$private->exists() ? KunenaLog::LOG_PRIVATE_POST_EDIT : KunenaLog::LOG_PRIVATE_POST_CREATE,
+			'',
+			$message->getCategory(),
+			$message->getTopic(),
+			$message
+		);
+
 		if (!$private->save()) {
 			$this->app->enqueueMessage($private->getError(), 'notice');
 		}
@@ -976,8 +986,9 @@ class KunenaControllerTopic extends KunenaController {
 
 		$topicId = JRequest::getInt('id', 0);
 		$messageId = JRequest::getInt('mesid', 0);
-		$targetTopic = JRequest::getInt ( 'targetid', JRequest::getInt ( 'targettopic', 0 ));
-		$targetCategory = JRequest::getInt ( 'targetcategory', 0 );
+		$targetCategory = JRequest::getInt('targetcategory', 0);
+		$targetTopic = JRequest::getInt('targettopic', 0);
+		if ($targetTopic < 0) $targetTopic = JRequest::getInt('targetid', 0);
 
 		if ($messageId) {
 			$object = KunenaForumMessageHelper::get ( $messageId );
