@@ -1221,6 +1221,11 @@ class KunenaControllerTopic extends KunenaController {
 		$reason = JRequest::getString ( 'reason' );
 		$text = JRequest::getString ( 'text' );
 
+		$template = KunenaTemplate::getInstance();
+		if (method_exists($template, 'reportMessage')) {
+			$template->reportMessage($message, $reason, $text);
+		}
+
 		KunenaLog::log(
 			KunenaLog::TYPE_REPORT,
 			$log,
