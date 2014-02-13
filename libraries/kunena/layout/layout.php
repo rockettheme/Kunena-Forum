@@ -259,6 +259,9 @@ class KunenaLayout extends KunenaLayoutBase
 				}
 			}
 		}
+
+		// temporary solution to replace (solved) and [solved] with a badge :)
+		$content = preg_replace("/^((?:[\\[\\(])solved(?:[\\]\\)]))\\s?/uim", '<span class="badge">SOLVED</span> ', $content);
 		$link = JHtml::_('kunenaforum.link', $url, $content, $title, $class, 'nofollow');
 
 		KUNENA_PROFILER ? KunenaProfiler::instance()->stop('function '.__CLASS__.'::'.__FUNCTION__.'()') : null;
