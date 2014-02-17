@@ -454,7 +454,7 @@ class KunenaControllerUser extends KunenaController {
 	}
 
 	protected function saveProfile() {
-		if (JRequest::getString('signature') === null) return;
+		if (JRequest::getVar('signature', null) === null) return;
 
 		$this->me->personalText = JRequest::getString ( 'personaltext', '' );
 		$birthdate = JRequest::getString('birthdate');
@@ -535,7 +535,7 @@ class KunenaControllerUser extends KunenaController {
 	}
 
 	protected function saveSettings() {
-		if (JRequest::getInt('hidemail') === null) return;
+		if (JRequest::getVar('hidemail', null) === null) return;
 
 		$this->me->ordering = JRequest::getInt('messageordering', '');
 		$this->me->hideEmail = JRequest::getInt('hidemail', '');
