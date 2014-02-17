@@ -454,13 +454,15 @@ class KunenaControllerUser extends KunenaController {
 	}
 
 	protected function saveProfile() {
-		$this->me->personalText = JRequest::getVar ( 'personaltext', '' );
+		if (JRequest::getString('signature') === null) return;
+
+		$this->me->personalText = JRequest::getString ( 'personaltext', '' );
 		$birthdate = JRequest::getString('birthdate');
 		if (!$birthdate) {
 			$birthdate = JRequest::getInt('birthdate1', '0000').'-'.JRequest::getInt('birthdate2', '00').'-'.JRequest::getInt ('birthdate3', '00');
 		}
 		$this->me->birthdate = $birthdate;
-		$this->me->location = trim(JRequest::getVar ( 'location', '' ));
+		$this->me->location = trim(JRequest::getString ( 'location', '' ));
 		$this->me->gender = JRequest::getInt ( 'gender', '' );
 		$this->me->icq = trim(JRequest::getString ( 'icq', '' ));
 		$this->me->aim = trim(JRequest::getString ( 'aim', '' ));
@@ -533,9 +535,11 @@ class KunenaControllerUser extends KunenaController {
 	}
 
 	protected function saveSettings() {
-		$this->me->ordering = JRequest::getInt('messageordering', '', 'post', 'messageordering');
-		$this->me->hideEmail = JRequest::getInt('hidemail', '', 'post', 'hidemail');
-		$this->me->showOnline = JRequest::getInt('showonline', '', 'post', 'showonline');
+		if (JRequest::getInt('hidemail') === null) return;
+
+		$this->me->ordering = JRequest::getInt('messageordering', '');
+		$this->me->hideEmail = JRequest::getInt('hidemail', '');
+		$this->me->showOnline = JRequest::getInt('showonline', '');
 	}
 
 	// Reports a user to stopforumspam.com
