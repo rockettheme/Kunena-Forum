@@ -170,13 +170,18 @@ class KunenaControllerUser extends KunenaController {
 		$reason_public = JRequest::getString ( 'reason_public', '' );
 		$comment = JRequest::getString ( 'comment', '' );
 
+		$banDelPosts = JRequest::getVar ( 'bandelposts', '' );
+		$DelAvatar = JRequest::getVar ( 'delavatar', '' );
+		$DelSignature = JRequest::getVar ( 'delsignature', '' );
+		$DelProfileInfo = JRequest::getVar ( 'delprofileinfo', '' );
+
+		$delban = JRequest::getString ( 'delban', '' );
+
 		if (! $ban->id) {
 			$ban->ban ( $user->userid, $ip, $block, $expiration, $reason_private, $reason_public, $comment );
 			$success = $ban->save ();
 			$this->report($user->userid);
 		} else {
-			$delban = JRequest::getString ( 'delban', '' );
-
 			if ( $delban ) {
 				$ban->unBan($comment);
 				$success = $ban->save ();
@@ -189,27 +194,48 @@ class KunenaControllerUser extends KunenaController {
 		}
 
 		if ($block) {
-			if ($ban->isEnabled ())
+			if ($ban->isEnabled ()) {
 				$message = JText::_ ( 'COM_KUNENA_USER_BLOCKED_DONE' );
-			else
+				$log = KunenaLog::LOG_USER_BLOCK;
+			} else {
 				$message = JText::_ ( 'COM_KUNENA_USER_UNBLOCKED_DONE' );
+				$log = KunenaLog::LOG_USER_UNBLOCK;
+			}
 		} else {
-			if ($ban->isEnabled ())
+			if ($ban->isEnabled ()) {
 				$message = JText::_ ( 'COM_KUNENA_USER_BANNED_DONE' );
-			else
+				$log = KunenaLog::LOG_USER_BAN;
+			} else {
 				$message = JText::_ ( 'COM_KUNENA_USER_UNBANNED_DONE' );
+				$log = KunenaLog::LOG_USER_UNBAN;
+			}
 		}
 
 		if (! $success) {
 			$this->app->enqueueMessage ( $ban->getError (), 'error' );
 		} else {
+			KunenaLog::log(
+				KunenaLog::TYPE_MODERATION,
+				$log,
+				array(
+					'expiration' => $delban ? 'NOW' : $expiration,
+					'reason_private' => $reason_private,
+					'reason_public' => $reason_public,
+					'comment' => $comment,
+					'options' => array(
+						'resetProfile' => (bool) $DelProfileInfo,
+						'resetSignature' => (bool) $DelSignature || $DelProfileInfo,
+						'deleteAvatar' => (bool) $DelAvatar || $DelProfileInfo,
+						'deletePosts' => (bool) $banDelPosts
+					)
+				),
+				null,
+				null,
+				$user
+			);
+
 			$this->app->enqueueMessage ( $message );
 		}
-
-		$banDelPosts = JRequest::getVar ( 'bandelposts', '' );
-		$DelAvatar = JRequest::getVar ( 'delavatar', '' );
-		$DelSignature = JRequest::getVar ( 'delsignature', '' );
-		$DelProfileInfo = JRequest::getVar ( 'delprofileinfo', '' );
 
 		if (! empty ( $DelAvatar ) || ! empty ( $DelProfileInfo )) {
 			$avatar_deleted = '';
