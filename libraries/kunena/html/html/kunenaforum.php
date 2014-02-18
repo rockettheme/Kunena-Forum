@@ -77,7 +77,7 @@ abstract class JHtmlKunenaForum {
 			if ($preselect && empty($selected) && !$disabled) {
 				$selected[] = $category->id;
 			}
-			$options [] = JHtml::_ ( 'select.option', $category->id, str_repeat  ( '- ', $category->level+$toplevel  ).' '.$category->name, 'value', 'text', $disabled );
+			$options [] = JHtml::_ ( 'select.option', $category->id, str_repeat  ( '&nbsp; &nbsp; ', $category->level+$toplevel  ).' '.$category->name, 'value', 'text', $disabled );
 		}
 		$disabled = false;
 		foreach ( $channels as $category ) {
