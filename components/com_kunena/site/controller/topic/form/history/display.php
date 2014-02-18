@@ -34,6 +34,7 @@ class ComponentKunenaControllerTopicFormHistoryDisplay extends KunenaControllerD
 		$this->me = KunenaUserHelper::getMyself();
 
 		$this->topic = KunenaForumTopicHelper::get($id);
+		$this->category = $this->topic->getCategory();
 		$this->history = KunenaForumMessageHelper::getMessagesByTopic(
 			$this->topic, 0, (int) $this->config->historylimit, 'DESC'
 		);
