@@ -47,7 +47,8 @@ class KunenaAdminModelUser extends KunenaModel {
 		$db = JFactory::getDBO ();
 		$userid = $this->getState($this->getName() . '.id');
 
-		$db->setQuery ( "SELECT topic_id AS thread FROM #__kunena_user_topics WHERE user_id='$userid' AND subscribed=1" );
+		// TODO: add pagination
+		$db->setQuery ( "SELECT topic_id AS thread FROM #__kunena_user_topics WHERE user_id='$userid' AND subscribed=1 ORDER BY thread DESC", 0, 200);
 		$subslist = (array) $db->loadObjectList ();
 		if (KunenaError::checkDatabaseError()) return array();
 
