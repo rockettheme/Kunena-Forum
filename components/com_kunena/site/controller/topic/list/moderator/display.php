@@ -53,13 +53,15 @@ class ComponentKunenaControllerTopicListModeratorDisplay extends ComponentKunena
 		}
 
 		$categories = KunenaForumCategoryHelper::getCategories($categoryIds, $reverse);
+		$mods = array_keys($access->getModerators() + $access->getAdmins());
 
 		$finder = new KunenaForumTopicFinder;
 		$finder
 			->filterByCategories($categories)
-			->filterAnsweredBy(array_keys($access->getModerators() + $access->getAdmins()), true)
+			->filterAnsweredBy($mods, true)
 			->filterByMoved(false)
-			->where('locked', '=', 0);
+			->where('locked', '=', 0)
+			->where('last_post_userid', 'NOT IN', $mods);
 
 		$this->pagination = new KunenaPagination($finder->count(), $start, $limit);
 
