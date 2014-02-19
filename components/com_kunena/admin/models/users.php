@@ -161,7 +161,7 @@ class KunenaAdminModelUsers extends JModelList {
 
 		// Filter by signature.
 		$filter = $this->getState('filter.signature');
-		if ($filter !== ''  && !empty($search)) {
+		if ($filter !== '') {
 			if ($filter) $query->where("ku.signature!={$db->quote('')} AND ku.signature IS NOT NULL");
 			else $query->where("ku.signature={$db->quote('')} OR ku.signature IS NULL");
 		}
