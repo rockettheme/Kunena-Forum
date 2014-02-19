@@ -27,6 +27,12 @@ class ComponentKunenaControllerTopicListModeratorDisplay extends ComponentKunena
 		parent::before();
 
 		$this->me = KunenaUserHelper::getMyself();
+
+		if (!$this->me->isModerator())
+		{
+			throw new KunenaExceptionAuthorise(JText::_('COM_KUNENA_NO_ACCESS'), $this->me->exists() ? 403 : 401);
+		}
+
 		$access = KunenaAccess::getInstance();
 		$this->moreUri = null;
 
