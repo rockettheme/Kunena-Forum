@@ -15,6 +15,7 @@ defined ( '_JEXEC' ) or die ();
 JHtml::_('behavior.tooltip');
 JHtml::_('behavior.multiselect');
 JHtml::_('dropdown.init');
+JHtml::_('bootstrap.popover');
 
 $filterItem = $this->escape($this->state->get('item.id'));
 ?>
