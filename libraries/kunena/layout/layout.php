@@ -261,7 +261,8 @@ class KunenaLayout extends KunenaLayoutBase
 		}
 
 		// temporary solution to replace (solved) and [solved] with a badge :)
-		$content = preg_replace("/^((?:[\\[\\(])solved(?:[\\]\\)]))\\s?/uim", '<span class="badge">SOLVED</span> ', trim($content));
+		$content = preg_replace("/(.+)(?:[\\[\\(]solved[\\]\\)])$/ui", '[solved] \1', trim($content));
+		$content = preg_replace("/^((?:[\\[\\(])solved(?:[\\]\\)]))\\s?/uim", '<span class="badge">SOLVED</span> ', $content);
 		$link = JHtml::_('kunenaforum.link', $url, $content, $title, $class, 'nofollow');
 
 		KUNENA_PROFILER ? KunenaProfiler::instance()->stop('function '.__CLASS__.'::'.__FUNCTION__.'()') : null;
@@ -280,7 +281,10 @@ class KunenaLayout extends KunenaLayoutBase
 		}
 		if ($title === null) $title = JText::sprintf('COM_KUNENA_TOPIC_LAST_LINK_TITLE', $this->escape($category->getLastTopic()->subject));
 
-		$content = preg_replace("/^(Re:\s?)?((?:[\\[\\(])solved(?:[\\]\\)]))\\s?/uim", '\1 <span class="badge">SOLVED</span> ', trim($content));
+
+		// temporary solution to replace (solved) and [solved] with a badge :)
+		$content = preg_replace("/^(Re:\s?)?(.+)(?:[\\[\\(]solved[\\]\\)])$/ui", '\1[solved] \2', trim($content));
+		$content = preg_replace("/^(Re:\s?)?((?:[\\[\\(])solved(?:[\\]\\)]))\\s?/uim", '\1 <span class="badge">SOLVED</span> ', $content);
 		return JHtml::_('kunenaforum.link', $uri, $content, $title, $class, 'nofollow');
 	}
 }
