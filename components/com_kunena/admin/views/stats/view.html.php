@@ -15,8 +15,6 @@ defined ( '_JEXEC' ) or die ();
  */
 class KunenaAdminViewStats extends KunenaView {
 	function displayDefault($tpl = null) {
-		JToolBarHelper::title ( JText::_('COM_KUNENA'), 'kunena.png' );
-
 		$document = JFactory::getDocument();
 		$document->setTitle(JText::_('COM_KUNENA_STAT_FORUMSTATS') . ' - ' .      $this->config->board_title);
 
