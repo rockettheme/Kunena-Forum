@@ -214,7 +214,7 @@ if($this->pagination->total > 0) :
 			<td>
 				<a class="btn hasPopover" title="Data" data-content="<?php echo
 				$this->escape("<pre>{$this->escape(json_encode(json_decode($item->data), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))}</pre>"); ?>"
-				   href="#">Data</a>
+				   data-placement="left" href="#">Data</a>
 
 			</td>
 		</tr>
