@@ -96,6 +96,25 @@ class KunenaAdminModelLogs extends JModelList
 
 		$this->setState('filter.active', !empty($filter_active));
 
+		$group = array();
+
+		if ($this->getUserStateFromRequest($this->context.'.group.type', 'group_type', false, 'bool'))
+			$group['type'] = 'a.type';
+		if ($this->getUserStateFromRequest($this->context.'.group.user', 'group_user', false, 'bool'))
+			$group['user'] = 'a.user_id';
+		if ($this->getUserStateFromRequest($this->context.'.group.category', 'group_category', false, 'bool'))
+			$group['category'] = 'a.category_id';
+		if ($this->getUserStateFromRequest($this->context.'.group.topic', 'group_topic', false, 'bool'))
+			$group['topic'] = 'a.topic_id';
+		if ($this->getUserStateFromRequest($this->context.'.group.target_user', 'group_target_user', false, 'bool'))
+			$group['target_user'] = 'a.target_user';
+		if ($this->getUserStateFromRequest($this->context.'.group.ip', 'group_ip', false, 'bool'))
+			$group['ip'] = 'a.ip';
+		if ($this->getUserStateFromRequest($this->context.'.group.operation', 'group_operation', false, 'bool'))
+			$group['operation'] = 'a.operation';
+
+		$this->setState('group', $group);
+
 		// List state information.
 		parent::populateState('id', 'desc');
 	}
@@ -124,6 +143,7 @@ class KunenaAdminModelLogs extends JModelList
 		$id	.= ':'.$this->getState('filter.time_start');
 		$id	.= ':'.$this->getState('filter.time_stop');
 		$id	.= ':'.$this->getState('filter.operation');
+		$id	.= ':'.json_encode($this->getState('group'));
 
 		return parent::getStoreId($id);
 	}
@@ -277,6 +297,18 @@ class KunenaAdminModelLogs extends JModelList
 			case 'time':
 			default:
 				$finder->order('id', $direction);
+		}
+
+		$group = $this->getState('group');
+
+		if ($group)
+		{
+			$finder->select('MAX(a.id) AS id, MAX(a.time) AS time, COUNT(*) AS count');
+
+			foreach ($group as $field)
+			{
+				$finder->group($field);
+			}
 		}
 
 		// Add the finder to the internal cache.

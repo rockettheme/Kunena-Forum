@@ -17,6 +17,8 @@ class KunenaAdminViewLogs extends KunenaView
 {
 	public function displayDefault($tpl = null)
 	{
+		$this->state = $this->get('state');
+		$this->group = $this->state->get('group');
 		$this->items = $this->get('items');
 		$this->pagination = $this->get('Pagination');
 
@@ -111,10 +113,16 @@ class KunenaAdminViewLogs extends KunenaView
 		return $filterFields;
 	}
 
-	protected function getType($id)
+	public function getType($id)
 	{
 		static $types = array(1 => 'MOD', 2 => 'ACT', 3 => 'ERR', 4 => 'REP');
 
 		return isset($types[$id]) ? $types[$id] : '???';
+	}
+
+	public function getGroupCheckbox($name)
+	{
+		$checked = isset($this->group[$name]) ? ' checked="checked"' : '';
+		return '<input type="checkbox" name="group_'.$name.'" value="1" title="Group By" '.$checked.' class="filter" />';
 	}
 }
