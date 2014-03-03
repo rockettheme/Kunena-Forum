@@ -62,6 +62,8 @@ class KunenaAdminModelLogs extends JModelList
 			$this->context .= '.'.$layout;
 		}
 
+		print_r($this->context);
+
 		$filter_active = '';
 
 		$filter_active .= $value = $this->getUserStateFromRequest($this->context.'.filter.id', 'filter_id', '', 'string');
@@ -173,7 +175,7 @@ class KunenaAdminModelLogs extends JModelList
 
 		// Add the total to the internal cache.
 		$this->cache[$store] = $total;
-
+print_r($total);
 		return $this->cache[$store];
 	}
 

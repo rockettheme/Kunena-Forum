@@ -198,7 +198,7 @@ if($this->pagination->total > 0) :
 				<?php echo !$this->group || isset($this->group['operation']) ? JText::_("COM_KUNENA_{$item->operation}") : ''; ?>
 			</td>
 			<td>
-				<?php echo !$this->group || isset($this->group['user']) ? ($user->id ? $this->escape($user->username) . ' <small>(' . $this->escape($item->user_id) . ')</small>' : '') : ''; ?>
+				<?php echo !$this->group || isset($this->group['user']) ? ($user->id ? $this->escape($user->username) . ' <small>(' . $this->escape($item->user_id) . ')</small>' . '<br />' . $this->escape($user->name) : '') : ''; ?>
 			</td>
 			<td>
 				<?php echo !$this->group || isset($this->group['category']) ? ($category->exists() ? $category->displayField('name') . ' <small>(' . $this->escape($item->category_id) . ')</small>' : '') : ''; ?>
@@ -207,7 +207,7 @@ if($this->pagination->total > 0) :
 				<?php echo !$this->group || isset($this->group['topic']) ? ($topic->exists() ? $topic->displayField('subject') . ' <small>(' . $this->escape($item->topic_id) . ')</small>' : '') : ''; ?>
 			</td>
 			<td>
-				<?php echo !$this->group || isset($this->group['target_user']) ? ($target->id ? $this->escape($target->username) . ' <small>(' . $this->escape($item->target_user) . ')</small>' : '') : ''; ?>
+				<?php echo !$this->group || isset($this->group['target_user']) ? ($target->id ? $this->escape($target->username) . ' <small>(' . $this->escape($item->target_user) . ')</small>' . '<br />' . $this->escape($target->name) : '') : ''; ?>
 			</td>
 			<td class="center">
 				<?php echo !$this->group || isset($this->group['ip']) ? $this->escape($item->ip) : ''; ?>

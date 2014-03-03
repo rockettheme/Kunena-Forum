@@ -191,8 +191,10 @@ abstract class KunenaDatabaseObjectFinder
 	{
 		$query = clone $this->query;
 		$this->build($query);
-		$query->clear('select')->select('COUNT(*)');
-		$this->db->setQuery($query);
+
+		$countQuery = $this->db->getQuery(true);
+		$countQuery->select('COUNT(*)')->from("({$query}) AS c");
+		$this->db->setQuery($countQuery);
 		$count = (int) $this->db->loadResult();
 		KunenaError::checkDatabaseError();
 
