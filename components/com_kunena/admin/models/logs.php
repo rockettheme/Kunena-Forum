@@ -94,6 +94,9 @@ class KunenaAdminModelLogs extends JModelList
 		$filter_active .= $value = $this->getUserStateFromRequest($this->context.'.filter.operation', 'filter_operation', '', 'string');
 		$this->setState('filter.operation', $value);
 
+		$filter_active .= $value = $this->getUserStateFromRequest($this->context.'.filter.usertypes', 'filter_usertypes', '', 'string');
+		$this->setState('filter.usertypes', $value);
+
 		$this->setState('filter.active', !empty($filter_active));
 
 		$group = array();
@@ -143,6 +146,7 @@ class KunenaAdminModelLogs extends JModelList
 		$id	.= ':'.$this->getState('filter.time_start');
 		$id	.= ':'.$this->getState('filter.time_stop');
 		$id	.= ':'.$this->getState('filter.operation');
+		$id	.= ':'.$this->getState('filter.usertypes');
 		$id	.= ':'.json_encode($this->getState('group'));
 
 		return parent::getStoreId($id);
@@ -263,6 +267,41 @@ class KunenaAdminModelLogs extends JModelList
 		if (!empty($filter))
 		{
 			$finder->where('a.operation', '=', $filter);
+		}
+
+		$usertypes = $this->state->get('filter.usertypes');
+		// Filter by user type.
+
+		if (is_numeric($usertypes))
+		{
+			$access = KunenaAccess::getInstance();
+			switch ($usertypes)
+			{
+				case 0:
+					$finder->where('user_id', '=', 0);
+					break;
+
+				case 1:
+					$finder->where('user_id', '>', 0);
+					break;
+
+				case 2:
+					$finder->where('user_id', '>', 0);
+					$finder->where('user_id', 'NOT IN', array_keys($access->getAdmins() + $access->getModerators()));
+					break;
+
+				case 3:
+					$finder->where('user_id', 'IN', array_keys($access->getModerators()));
+					break;
+
+				case 4:
+					$finder->where('user_id', 'IN', array_keys($access->getAdmins()));
+					break;
+
+				case 5:
+					$finder->where('user_id', 'IN', array_keys($access->getAdmins() + $access->getModerators()));
+					break;
+			}
 		}
 
 		$group = $this->getState('group');

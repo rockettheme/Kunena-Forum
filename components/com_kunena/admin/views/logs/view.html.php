@@ -22,6 +22,7 @@ class KunenaAdminViewLogs extends KunenaView
 		$this->items = $this->get('items');
 		$this->pagination = $this->get('Pagination');
 
+		$this->filterUserFields = $this->getFilterUserFields();
 		$this->sortFields = $this->getSortFields();
 		$this->sortDirectionFields = $this->getSortDirectionFields();
 
@@ -39,6 +40,8 @@ class KunenaAdminViewLogs extends KunenaView
 		$this->filterTimeStop = $this->escape($this->state->get('filter.time_stop'));
 		$this->filterOperation = $this->escape($this->state->get('filter.operation'));
 		$this->filterActive = $this->escape($this->state->get('filter.active'));
+
+		$this->filterUsertypes	= $this->escape($this->state->get('filter.usertypes'));
 		$this->listOrdering = $this->escape($this->state->get('list.ordering'));
 		$this->listDirection = $this->escape($this->state->get('list.direction'));
 
@@ -56,6 +59,18 @@ class KunenaAdminViewLogs extends KunenaView
 		JToolBarHelper::title ( JText::_('COM_KUNENA').': '.JText::_('COM_KUNENA_LOG_MANAGER'), 'users' );
 	}
 
+	protected function getFilterUserFields()
+	{
+		$filterFields = array();
+		$filterFields[] = JHtml::_('select.option', 0, 'Guests');
+		$filterFields[] = JHtml::_('select.option', 1, 'Registered users');
+		$filterFields[] = JHtml::_('select.option', 2, 'Regular members');
+		$filterFields[] = JHtml::_('select.option', 3, 'Moderators');
+		$filterFields[] = JHtml::_('select.option', 4, 'Administrators');
+		$filterFields[] = JHtml::_('select.option', 5, 'Mods and Admins');
+
+		return $filterFields;
+	}
 	protected function getSortFields()
 	{
 		$sortFields = array();

@@ -75,6 +75,13 @@ $filterItem = $this->escape($this->state->get('item.id'));
 			<?php echo JHtml::_('select.options', $this->sortFields, 'value', 'text', $this->listOrdering);?>
 		</select>
 	</div>
+	<div class="btn-group pull-right">
+		<label for="sortTable" class="element-invisible"><?php echo 'Filter users by:';?></label>
+		<select name="filter_usertypes" id="filter_usertypes" class="input-medium filter" onchange="Joomla.orderTable()">
+			<option value=""><?php echo 'All';?></option>
+			<?php echo JHtml::_('select.options', $this->filterUserFields, 'value', 'text', $this->filterUsertypes);?>
+		</select>
+	</div>
 	<div class="clearfix"></div>
 </div>
 
