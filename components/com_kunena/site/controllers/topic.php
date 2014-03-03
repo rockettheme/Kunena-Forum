@@ -730,7 +730,7 @@ class KunenaControllerTopic extends KunenaController {
 			KunenaLog::log(
 				KunenaLog::TYPE_MODERATION,
 				KunenaLog::LOG_POST_UNTHANKYOU,
-				array('mesid' => $message->id),
+				array('mesid' => $message->id, 'userid' => $userid),
 				$category,
 				$message->getTopic(),
 				$message->getAuthor()
