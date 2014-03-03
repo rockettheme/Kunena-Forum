@@ -62,8 +62,6 @@ class KunenaAdminModelLogs extends JModelList
 			$this->context .= '.'.$layout;
 		}
 
-		print_r($this->context);
-
 		$filter_active = '';
 
 		$filter_active .= $value = $this->getUserStateFromRequest($this->context.'.filter.id', 'filter_id', '', 'string');
@@ -175,7 +173,7 @@ class KunenaAdminModelLogs extends JModelList
 
 		// Add the total to the internal cache.
 		$this->cache[$store] = $total;
-print_r($total);
+
 		return $this->cache[$store];
 	}
 
@@ -267,6 +265,8 @@ print_r($total);
 			$finder->where('a.operation', '=', $filter);
 		}
 
+		$group = $this->getState('group');
+
 		// Add the list ordering clause.
 		$direction = $this->state->get('list.direction') == 'asc' ? 1 : -1;
 		switch ($this->state->get('list.ordering'))
@@ -296,12 +296,18 @@ print_r($total);
 				$finder->order('operation', $direction);
 				break;
 			case 'id':
+				if ($group) {
+					$finder->order('count', $direction, '');
+				}
+				else
+				{
+					$finder->order('id', $direction);
+				}
+				break;
 			case 'time':
 			default:
 				$finder->order('id', $direction);
 		}
-
-		$group = $this->getState('group');
 
 		if ($group)
 		{

@@ -60,7 +60,7 @@ class KunenaAdminViewLogs extends KunenaView
 	{
 		$sortFields = array();
 		// TODO: translate
-		$sortFields[] = JHtml::_('select.option', 'id', 'Id');
+		$sortFields[] = JHtml::_('select.option', 'id', $this->group ? 'Count' : 'Id');
 		$sortFields[] = JHtml::_('select.option', 'type', 'Type (by id)');
 		$sortFields[] = JHtml::_('select.option', 'user', 'User (by id)');
 		$sortFields[] = JHtml::_('select.option', 'category', 'Category (by id)');

@@ -82,7 +82,9 @@ $filterItem = $this->escape($this->state->get('item.id'));
 	<thead>
 		<tr>
 			<th class="nowrap center" width="1%">
-				<?php echo !$this->group ? JHtml::_('grid.sort', 'JGRID_HEADING_ID', 'id', $this->listDirection, $this->listOrdering) : 'Count'; ?>
+				<?php echo $this->group
+					? JHtml::_('grid.sort', 'Count', 'id', $this->listDirection, $this->listOrdering)
+					: JHtml::_('grid.sort', 'JGRID_HEADING_ID', 'id', $this->listDirection, $this->listOrdering); ?>
 			</th>
 			<th class="nowrap center" width="1%">
 				<?php echo JHtml::_('grid.sort', 'Time', 'time', $this->listDirection, $this->listOrdering); ?>
