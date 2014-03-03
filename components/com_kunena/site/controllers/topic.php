@@ -708,6 +708,16 @@ class KunenaControllerTopic extends KunenaController {
 				$this->setRedirectBack();
 				return;
 			}
+
+			KunenaLog::log(
+				KunenaLog::TYPE_ACTION,
+				KunenaLog::LOG_POST_THANKYOU,
+				array('mesid' => $message->id),
+				$category,
+				$message->getTopic(),
+				$message->getAuthor()
+			);
+
 			$activityIntegration->onAfterThankyou($this->me->userid, $message->userid, $message);
 		} else {
 			$userid = JRequest::getInt('userid','0');
@@ -716,6 +726,16 @@ class KunenaControllerTopic extends KunenaController {
 				$this->setRedirectBack();
 				return;
 			}
+
+			KunenaLog::log(
+				KunenaLog::TYPE_MODERATION,
+				KunenaLog::LOG_POST_UNTHANKYOU,
+				array('mesid' => $message->id),
+				$category,
+				$message->getTopic(),
+				$message->getAuthor()
+			);
+
 			$activityIntegration->onAfterUnThankyou($this->me->userid, $userid, $message);
 		}
 		$this->setRedirect($message->getUrl($category->exists() ? $category->id : $message->catid, false));
