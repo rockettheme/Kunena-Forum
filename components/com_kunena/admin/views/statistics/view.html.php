@@ -56,7 +56,7 @@ class KunenaAdminViewStatistics extends KunenaView
 	protected function setToolbar()
 	{
 		// Set the titlebar text
-		JToolBarHelper::title ( JText::_('COM_KUNENA').': '.JText::_('COM_KUNENA_LOG_MANAGER'), 'users' );
+		JToolBarHelper::title ( JText::_('COM_KUNENA').': '.JText::_('COM_KUNENA_MENU_STATISTICS'), 'image' );
 	}
 
 	protected function getFilterUserFields()

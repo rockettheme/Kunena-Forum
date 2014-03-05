@@ -82,7 +82,10 @@ $filterItem = $this->escape($this->state->get('item.id'));
 	<thead>
 		<tr>
 			<th class="">
-				User
+				Name
+			</th>
+			<th class="">
+				Username <small>(id)</small>
 			</th>
 			<th class="center">
 				Posts
@@ -117,7 +120,10 @@ if($this->pagination->total > 0) :
 		?>
 		<tr>
 			<td>
-				<?php echo $this->escape($user->name) . '<br />' . $this->escape($user->username) . ' <small>(' . $this->escape($item->user_id) . ')</small>'; ?>
+				<?php echo $this->escape($user->name); ?>
+			</td>
+			<td>
+				<?php echo $this->escape($user->username) . ' <small>(' . $this->escape($item->user_id) . ')</small>'; ?>
 			</td>
 			<td class="center">
 				<?php echo (int) $item->posts; ?>
