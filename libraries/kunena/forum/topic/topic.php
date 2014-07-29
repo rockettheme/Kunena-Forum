@@ -97,6 +97,7 @@ class KunenaForumTopic extends KunenaDatabaseObject {
 		if (!empty($this->id)) {
 			$this->_exists = true;
 			$this->_hold = $this->hold;
+			$this->_posts = $this->posts;
 		} else {
 			parent::__construct($properties);
 		}
