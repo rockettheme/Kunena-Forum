@@ -534,15 +534,15 @@ class KunenaControllerTopic extends KunenaController {
 		$attachment = JRequest::getVar ( 'attachment', array(), 'post', 'array' );
 		$attachment_private = JRequest::getVar ( 'attachment_private', array(), 'post', 'array' );
 
-		$addList = array_keys(array_intersect_key($attachments, $attachment));
-		JArrayHelper::toInteger($addList);
+		$publicList = array_keys(array_intersect_key($attachments, $attachment));
+		JArrayHelper::toInteger($publicList);
 		$privateList = array_keys(array_intersect_key($attachments, $attachment_private));
-		JArrayHelper::toInteger($addList);
+		JArrayHelper::toInteger($privateList);
 		$removeList = array_keys(array_keys(array_diff_key($attachments, $attachment + $attachment_private)));
 		JArrayHelper::toInteger($removeList);
 
 		$message->addAttachments(
-			$addList,
+			$publicList,
 			KunenaAttachment::PROTECTION_PUBLIC
 		);
 		$message->addAttachments(
