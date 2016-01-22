@@ -130,140 +130,145 @@ class KunenaModelElasticsearch extends KunenaModel {
 		$search = ElasticsearchHelper::getSearch();
 
 		// setup some paging information
-        $limit = $this->getState('list.limit');
-        $from = $this->getState('list.start');
+		$limit = $this->getState('list.limit');
+		$from = $this->getState('list.start');
 
-        $this->filters = new Elastica\Filter\BoolAnd();
+		$this->filters = new Elastica\Filter\BoolAnd();
 
-        $q = strip_tags($this->getState('searchwords'));
+		$q = strip_tags($this->getState('searchwords'));
 
-        // Keyword searching
-        if ($q) {
-        	$query = new Elastica\Query\FunctionScore();
+		// Keyword searching
+		if ($q) {
+			$query = new Elastica\Query\FunctionScore();
 
-        	//$query->setScoreMode('sum');
+			//$query->setScoreMode('sum');
 
-	        $dateScale = '365d';
-	        $dateOffset = '15d';
-	        $dateDecay = '0.1';
+			$dateScale = '365d';
+			$dateOffset = '15d';
+			$dateDecay = '0.1';
 
-	        $query->setParam('score_mode', 'sum');
-	        $query->setParam('boost_mode', 'sum');
-	        $query->setParam('max_boost', '5');
+			$query->setParam('score_mode', 'sum');
+			$query->setParam('boost_mode', 'sum');
+			$query->setParam('max_boost', '5');
 
-	        // Add boosting algorithms
-	        $query->setParam('functions', [
-	        	[
-	        		'boost_factor' => 2,
-	        		'filter' => [
-	        			'term' => [
-	        				'parent' => 0
-	        			]
-	        		]
-	        	],
-	        	[
-	        		'boost_factor' => 2,
-	        		'linear' => [
-	        			'created' => [
-		        			'scale' => $dateScale,
-		        			'offset' => $dateOffset,
-		        			'decay' => $dateDecay
-		        		]
-	        		]
-	        	],
-	        	[
-	        		'boost_factor' => 2,
-	        		'script_score' => [
-	        			'script' => "_score * doc['thankyous'].value / 2"
-	        		]
-	        	]
- 	        ]);
+			// Add boosting algorithms
+			$query->setParam('functions', [
+				[
+					'boost_factor' => 2,
+					'filter' => [
+						'term' => [
+							'parent' => 0
+						]
+					]
+				],
+				[
+					'boost_factor' => 2,
+					'linear' => [
+						'created' => [
+							'scale' => $dateScale,
+							'offset' => $dateOffset,
+							'decay' => $dateDecay
+						]
+					]
+				],
+				[
+					'boost_factor' => 2,
+					'script_score' => [
+						'script' => "_score * doc['thankyous'].value / 2"
+					]
+				]
+			]);
 
-        	$childQuery = new Elastica\Query\MultiMatch();
-	        $childQuery->setQuery($q);
+			$childQuery = new Elastica\Query\MultiMatch();
+			$childQuery->setQuery($q);
 
-	        $searchtype = $this->getState('query.searchtype');
+			$searchtype = $this->getState('query.searchtype');
 
-	        switch ($searchtype) {
-	        	case 1:		// Titles only
-	        		$childQuery->setFields(array('subject'));
-	        		break;
-	        	case 2:		// Messages only
-	        		$childQuery->setFields(array('message'));
-	        		break;  
-	        	case 3:		// First topic only
-	        		$topicFilter = new Elastica\Filter\Term();
-        			$topicFilter->setTerm('parent',0);
-        			$this->filters->addFilter($topicFilter);
-        			$childQuery->setFields(array('subject','message'));
-	        		break;
-	        	default:	// Title + Message
-	        		$childQuery->setFields(array('subject','message'));	
-	        		break;
-	        }
+			switch ($searchtype) {
+				case 1:		// Titles only
+					$childQuery->setFields(array('subject'));
+					break;
+				case 2:		// Messages only
+					$childQuery->setFields(array('message'));
+					break;
+				case 3:		// First topic only
+					$topicFilter = new Elastica\Filter\Term();
+					$topicFilter->setTerm('parent',0);
+					$this->filters->addFilter($topicFilter);
+					$childQuery->setFields(array('subject','message'));
+					break;
+				default:	// Title + Message
+					$childQuery->setFields(array('subject','message'));
+					break;
+			}
 
-	        $query->setQuery($childQuery);
-	        
+			$query->setQuery($childQuery);
 
-        } else {
-        	$query = new Elastica\Query\MatchAll();
-        }
 
-        // put it all together
-        $queryObj = new Elastica\Query($query);
-        $queryObj->setSize($limit)->setFrom($from);
-        $queryObj->setFilter($this->getFilters());
-        $queryObj->setparam('track_scores', true);
-        $queryObj->setSort($this->getSortOrder());
-        $queryObj->setHighlight(array(
-            'pre_tags' => array('<em class="highlight">'),
-            'post_tags' => array('</em>'),
-            'require_field_match' => false,
-            'fields' => array(
-                'subject' => array(
-                    'number_of_fragments' => 0,
-                ),
-                'message' => array(
-                    'fragment_size' => 300,
-                    'number_of_fragments' => 1,
-                )
-            ),
-        ));
-        $queryObj->setParam('suggest', array(
-            'text' => $q,
-            "simple_phrase" => array(
-                "phrase" => array(
-                    "field" => "subject",
-                    "size" => 5,
-                    "real_word_error_likelihood" => 0.95,
-                    "confidence" => 2.0,
-                    "max_errors" => 0.5,
-                    "gram_size" => 3
-                )
-            )
-        ));
+		} else {
+			$query = new Elastica\Query\MatchAll();
+		}
 
-        $search->addIndex('kunena');
+		// put it all together
+		$queryObj = new Elastica\Query($query);
+		$queryObj->setSize($limit)->setFrom($from);
+		$queryObj->setPostFilter($this->getFilters());
+		$queryObj->setparam('track_scores', true);
+		$queryObj->setSort($this->getSortOrder());
+		$queryObj->setHighlight(array(
+			'pre_tags' => array('<em class="highlight">'),
+			'post_tags' => array('</em>'),
+			'require_field_match' => false,
+			'fields' => array(
+				'subject' => array(
+					'number_of_fragments' => 0,
+				),
+				'message' => array(
+					'fragment_size' => 300,
+					'number_of_fragments' => 1,
+				)
+			),
+		));
+		$suggest = new Elastica\Suggest();
+		$term1 = new Elastica\Suggest\Term('simple_phrase', 'content');
+		$term1->setText($q)->setSize(3);
+		$suggest->addSuggestion($term1);
+		$queryObj->setSuggest($suggest);
+//        $queryObj->setParam('suggest', array(
+//            'text' => $q,
+//            "simple_phrase" => array(
+//                "phrase" => array(
+//                    "field" => "subject",
+//                    "size" => 5,
+//                    "real_word_error_likelihood" => 0.95,
+//                    "confidence" => 2.0,
+//                    "max_errors" => 0.5,
+//                    "gram_size" => 3
+//                )
+//            )
+//        ));
 
-        try {
-        	if (ElasticsearchHelper::getDebuggable()) {
-                JLog::add('Forum Query: '.json_encode($queryObj->toArray()), JLog::INFO,'elasticsearch');    
-            }
-            $resultSet = $search->search($queryObj);
-        } catch (Exception $e) {
-        	JError::raiseWarning(500, $e->getMessage());
-            throw new JException("Search Engine Failure",503);
-        }
+		$search->addIndex('kunena');
 
-        // Load the messages
-        $msg_ids = array();
-       	foreach($resultSet as $result) {
-       		$msg_ids[] = $result->msgid;
-       	}
-       	$this->messages = KunenaForumMessageHelper::getMessages($msg_ids);
+		try {
+			if (ElasticsearchHelper::getDebuggable()) {
+				JLog::add('Forum Query: '.json_encode($queryObj->toArray()), JLog::INFO,'elasticsearch');
+			}
+			$resultSet = $search->search($queryObj);
+		} catch (Exception $e) {
+			JError::raiseWarning(500, $e->getMessage());
+			throw new JException("Search Engine Failure",503);
+		}
 
-       	// Load some schnizzle
-       	$topicids = array();
+		// Load the messages
+		$msg_ids = array();
+		foreach($resultSet as $result) {
+			$msg_ids[] = $result->msgid;
+		}
+		$this->messages = KunenaForumMessageHelper::getMessages($msg_ids);
+
+		// Load some schnizzle
+		$topicids = array();
 		$userids = array();
 		foreach ($this->messages as $message) {
 			$topicids[$message->thread] = $message->thread;
@@ -278,19 +283,19 @@ class KunenaModelElasticsearch extends KunenaModel {
 		KunenaUserHelper::loadUsers($userids);
 		KunenaForumMessageHelper::loadLocation($this->messages);
 
-        $data = new JObject;
-        $data->total = $resultSet->getTotalHits();
-        $data->hits = $resultSet->getTotalHits() > ES_MAX_RESULTS ? ES_MAX_RESULTS : $resultSet->getTotalHits();
-        $data->page = ceil(($from+1) / $limit);
-        $data->pages = intval(ceil($data->hits / $limit));
-        $data->from = $from;
-        $data->size = $limit;
-        $data->query = $q;
-        $data->count = $resultSet->count();
-        $data->time = 0.001 * $resultSet->getTotalTime();
-        //$data->suggestions = $this->getSuggestions($resultSet);
-        $data->results = $resultSet;
-        $data->messages = $this->messages;
+		$data = new JObject;
+		$data->total = $resultSet->getTotalHits();
+		$data->hits = $resultSet->getTotalHits() > ES_MAX_RESULTS ? ES_MAX_RESULTS : $resultSet->getTotalHits();
+		$data->page = ceil(($from+1) / $limit);
+		$data->pages = intval(ceil($data->hits / $limit));
+		$data->from = $from;
+		$data->size = $limit;
+		$data->query = $q;
+		$data->count = $resultSet->count();
+		$data->time = 0.001 * $resultSet->getTotalTime();
+		//$data->suggestions = $this->getSuggestions($resultSet);
+		$data->results = $resultSet;
+		$data->messages = $this->messages;
 
 		$this->data = $data;
 		$this->total = $data->hits;
@@ -311,37 +316,37 @@ class KunenaModelElasticsearch extends KunenaModel {
 		switch ($this->getState('query.sortby')) {
 			case 'lastpost' :
 				$sortorder = array(
-		        	'created' => array('order' => $ordering )
-		        );
+					'created' => array('order' => $ordering )
+				);
 				break;
 			case 'title' :
 				$sortorder = array(
-		        	'subject' => array('order' => $ordering )
-		        );
+					'subject' => array('order' => $ordering )
+				);
 				break;
 			case 'views' :
 				$sortorder = array(
-		        	'hits' => array('order' => $ordering )
-		        );
+					'hits' => array('order' => $ordering )
+				);
 				break;
 			case 'postusername' :
 				$sortorder = array(
-		        	'name' => array('order' => $ordering )
-		        );
+					'name' => array('order' => $ordering )
+				);
 				break;
 			case 'forum' :
 				$sortorder = array(
-		        	'catid' => array('order' => $ordering )
-		        );
-		        break;
+					'catid' => array('order' => $ordering )
+				);
+				break;
 			default :
 				$sortorder = array(
-		        	'_score' => array('order' => $ordering ),
-		        	'created' => array('order' => $ordering )
-		        );
+					'_score' => array('order' => $ordering ),
+					'created' => array('order' => $ordering )
+				);
 		}
 
-        return $sortorder;
+		return $sortorder;
 	}
 
 	protected function getFilters() {
@@ -407,7 +412,7 @@ class KunenaModelElasticsearch extends KunenaModel {
 			} else {
 				$f1 = new Elastica\Filter\Term();
 				$f2 = new Elastica\Filter\Term();
-				$f1->setTerm('name', $username_terms[0]);	
+				$f1->setTerm('name', $username_terms[0]);
 				$f2->setTerm('username',$username_terms[0]);
 			}
 			$userFilter->addFilter($f1);
@@ -415,31 +420,31 @@ class KunenaModelElasticsearch extends KunenaModel {
 		}
 
 		// Published filter check
-        $publishedFilter = new Elastica\Filter\Term();
-        $publishedFilter->setTerm('hold',0);
+		$publishedFilter = new Elastica\Filter\Term();
+		$publishedFilter->setTerm('hold',0);
 
-        
 
-        // Put all the filters together
-        $this->filters->addFilter($publishedFilter);
-        $this->filters->addFilter($accessFilter);
-        if ($dateQuery) {
-        	$this->filters->addFilter($dateFilter);	
-        }
-        if ($username) {
-        	$this->filters->addFilter($userFilter);	
-        }
-        if ($topic) {
-        	$this->filters->addFilter($topicFilter);
-        }
 
-        return $this->filters;
+		// Put all the filters together
+		$this->filters->addFilter($publishedFilter);
+		$this->filters->addFilter($accessFilter);
+		if ($dateQuery) {
+			$this->filters->addFilter($dateFilter);
+		}
+		if ($username) {
+			$this->filters->addFilter($userFilter);
+		}
+		if ($topic) {
+			$this->filters->addFilter($topicFilter);
+		}
+
+		return $this->filters;
 	}
 
 
 	protected function sanitizeQuery($query) {
-        return Elastica\Util::replaceBooleanWordsAndEscapeTerm($query);
-    }
+		return Elastica\Util::replaceBooleanWordsAndEscapeTerm($query);
+	}
 
 	public function getUrlParams() {
 		// Turn internal state into URL, but ignore default values
