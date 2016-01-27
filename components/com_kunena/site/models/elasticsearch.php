@@ -179,7 +179,7 @@ class KunenaModelElasticsearch extends KunenaModel {
 				]
 			]);
 
-			$childQuery = new Elastica\Query\MultiMatch();
+			$childQuery = new Elastica\Query\QueryString();
 			$childQuery->setQuery($q);
 
 			$searchtype = $this->getState('query.searchtype');
