@@ -217,13 +217,12 @@ class KunenaForumTopicFinder extends KunenaDatabaseObjectFinder
 		$subQuery = $this->db->getQuery(true);
 		$subQuery->select('st.id, MAX(sut.last_post_id) AS max_post_id')
 			->from('#__kunena_topics AS st')
-			->leftJoin('#__kunena_user_topics AS sut ON sut.topic_id=st.id')
-			->where("sut.user_id IN ({$userlist})")
+			->leftJoin("#__kunena_user_topics AS sut ON sut.topic_id=st.id AND sut.user_id IN ({$userlist})")
 			->group('st.last_post_id')
 			->order('st.last_post_id DESC');
 
-		// Hard limit on sub-query to make derived table faster to sort.
-		$this->query->innerJoin("({$subQuery} LIMIT 1000) AS uu ON uu.id=a.id");
+		// Hard limit of one month on sub-query to make derived table faster to sort.
+		$this->query->innerJoin("({$subQuery} LIMIT (SELECT COUNT(*) FROM `#__kunena_topics` WHERE last_post_time>UNIX_TIMESTAMP(NOW() - INTERVAL 1 MONTH))) AS uu ON uu.id=a.id");
 		$this->query->innerJoin("#__kunena_user_topics AS ut ON ut.topic_id=a.id AND ut.owner=1");
 
 		if ($negate) {
