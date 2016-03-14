@@ -215,7 +215,7 @@ class KunenaForumTopicFinder extends KunenaDatabaseObjectFinder
 		$userlist = implode(',', $list);
 
 		$subQuery = $this->db->getQuery(true);
-		$subQuery->select('st.id, MAX(sut.last_post_id) AS max_post_id')
+		$subQuery->select('st.id, MAX(IFNULL(sut.last_post_id, 0)) AS max_post_id')
 			->from('#__kunena_topics AS st')
 			->leftJoin("#__kunena_user_topics AS sut ON sut.topic_id=st.id AND sut.user_id IN ({$userlist})")
 			->group('st.last_post_id')
