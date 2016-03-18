@@ -221,8 +221,8 @@ class KunenaForumTopicFinder extends KunenaDatabaseObjectFinder
 			->group('st.last_post_id')
 			->order('st.last_post_id DESC');
 
-		// Hard limit of 1500 posts on sub-query to make derived table faster to sort.
-		$this->query->innerJoin("({$subQuery} LIMIT 1500) AS uu ON uu.id=a.id");
+		// Hard limit of 3000 posts on sub-query to make derived table faster to sort.
+		$this->query->innerJoin("({$subQuery} LIMIT 3000) AS uu ON uu.id=a.id");
 		$this->query->innerJoin("#__kunena_user_topics AS ut ON ut.topic_id=a.id AND ut.owner=1");
 
 		if ($negate) {
