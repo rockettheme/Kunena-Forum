@@ -1166,7 +1166,7 @@ class KunenaForumMessage extends KunenaDatabaseObject {
 	 * @return string
 	 */
 	protected function attachEmailBody(JMail $mail, $subscription, $subject, $url, $once) {
-		$layout = KunenaLayout::factory('Email/Subscription')->debug(false)
+		$layout = KunenaLayout::factory('Email/Subscription')->setDebug(false)
 			->set('mail', $mail)
 			->set('message', $this)
 			->set('messageUrl', $url)
