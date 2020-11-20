@@ -108,6 +108,12 @@ class KunenaModelElasticsearch extends KunenaModel {
 		return $this->getState('searchwords');
 	}
 
+	public function flatten(array $array) {
+		$return = array();
+		array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });
+		return $return;
+	}
+
 	public function getTotal() {
 		$this->getResults();
 		return $this->total;
@@ -133,13 +139,25 @@ class KunenaModelElasticsearch extends KunenaModel {
 		$limit = $this->getState('list.limit');
 		$from = $this->getState('list.start');
 
-		$this->filters = new Elastica\Filter\BoolAnd();
+
+
+		//$query_dsl = new Elastica\QueryBuilder\DSL\Filter();
+		//$this->filters = $query_dsl->bool_and();
+
+		$query_dsl = [
+			'body' => [
+				'query' => [
+					'bool' => [
+					],
+				],
+			],
+		];
 
 		$q = strip_tags($this->getState('searchwords'));
 
 		// Keyword searching
 		if ($q) {
-			$query = new Elastica\Query\FunctionScore();
+			// $query = new Elastica\Query\FunctionScore();
 
 			//$query->setScoreMode('sum');
 
@@ -147,7 +165,7 @@ class KunenaModelElasticsearch extends KunenaModel {
 			$dateOffset = '15d';
 			$dateDecay = '0.1';
 
-			$query->setParam('score_mode', 'sum');
+			/* $query->setParam('score_mode', 'sum');
 			$query->setParam('boost_mode', 'sum');
 			$query->setParam('max_boost', '5');
 
@@ -177,45 +195,99 @@ class KunenaModelElasticsearch extends KunenaModel {
 						'script' => "_score * doc['thankyous'].value / 2"
 					]
 				]
-			]);
+			]); */
 
-			$childQuery = new Elastica\Query\QueryString();
-			$childQuery->setQuery($q);
+			$query = [
+					"query" => [
+						"function_score" => [
+							'functions' => [
+								[
+									'weight' => 2,
+									'filter' => [
+										'term' => [
+											'parent' => 0
+										]
+									]
+								],
+								[
+									'weight' => 2,
+									'linear' => [
+										'created' => [
+											'scale' => $dateScale,
+											'offset' => $dateOffset,
+											'decay' => $dateDecay
+										]
+									]
+								],
+								[
+									'weight' => 2,
+									'script_score' => [
+										'script' => "_score * doc['thankyous'].value / 2"
+									]
+								]
+							],
+							'score_mode' => 'sum',
+							'boost_mode' => 'sum',
+							'max_boost' => '5',
+				
+						],
+					],
+			];
+
+			//$childQuery = new Elastica\Query\QueryString();
+			//$childQuery->setQuery($q);
+
+			$childQuery = [
+				'query' => [
+					'query_string' => [
+						'query' => $q,
+					],
+				],
+			];
 
 			$searchtype = $this->getState('query.searchtype');
 
 			switch ($searchtype) {
 				case 1:		// Titles only
-					$childQuery->setFields(array('subject'));
+					$childQuery['query']['query_string']['fields'] = array('subject');
 					break;
 				case 2:		// Messages only
-					$childQuery->setFields(array('message'));
+					$childQuery['query']['query_string']['fields'] = array('message');
 					break;
 				case 3:		// First topic only
-					$topicFilter = new Elastica\Filter\Term();
-					$topicFilter->setTerm('parent',0);
-					$this->filters->addFilter($topicFilter);
-					$childQuery->setFields(array('subject','message'));
+					//$topicFilter = $query_dsl->bool_term();
+					//$topicFilter->setTerm('parent',0);
+					//$this->filters->addFilter($topicFilter);
+					$query_dsl['query']['bool']['filter'][] = [
+						'term' => ['parent' => 0]
+					];
+				// $childQuery->setFields(array('subject','message'));
+					$childQuery['query']['query_string']['fields'] = array('subject','message');
+				
 					break;
 				default:	// Title + Message
-					$childQuery->setFields(array('subject','message'));
+					//$childQuery->setFields(array('subject','message'));
+					$childQuery['query']['query_string']['fields'] = array('subject','message');
 					break;
 			}
 
-			$query->setQuery($childQuery);
-
+			$query['query']['function_score']['query'] = $childQuery['query'];
 
 		} else {
-			$query = new Elastica\Query\MatchAll();
+			$query = ['body' => [
+				'query' => [
+					'match_all' => '',
+				],
+			],];
 		}
 
 		// put it all together
-		$queryObj = new Elastica\Query($query);
-		$queryObj->setSize($limit)->setFrom($from);
-		$queryObj->setPostFilter($this->getFilters());
-		$queryObj->setparam('track_scores', true);
-		$queryObj->setSort($this->getSortOrder());
-		$queryObj->setHighlight(array(
+		// $queryObj = new Elastica\Query($query);
+		//$queryObj->setSize($limit)->setFrom($from);
+		// $queryObj->setPostFilter($this->getFilters());
+		//$queryObj->setparam('track_scores', true);
+		//$queryObj->setSort($this->getSortOrder());
+		/* 		$queryObj->setHighlight(array(
 			'pre_tags' => array('<em class="highlight">'),
 			'post_tags' => array('</em>'),
 			'require_field_match' => false,
@@ -228,31 +300,67 @@ class KunenaModelElasticsearch extends KunenaModel {
 					'number_of_fragments' => 1,
 				)
 			),
-		));
-		$suggest = new Elastica\Suggest();
-		$term1 = new Elastica\Suggest\Term('simple_phrase', 'content');
-		$term1->setText($q)->setSize(3);
-		$suggest->addSuggestion($term1);
-		$queryObj->setSuggest($suggest);
-//        $queryObj->setParam('suggest', array(
-//            'text' => $q,
-//            "simple_phrase" => array(
-//                "phrase" => array(
-//                    "field" => "subject",
-//                    "size" => 5,
-//                    "real_word_error_likelihood" => 0.95,
-//                    "confidence" => 2.0,
-//                    "max_errors" => 0.5,
-//                    "gram_size" => 3
-//                )
-//            )
-//        ));
+		)); */
+		//$suggest = new Elastica\Suggest();
+		//$term1 = new Elastica\Suggest\Term('simple_phrase', 'content');
+		//$term1->setText($q)->setSize(3);
+		//$suggest->addSuggestion($term1);
+		//$queryObj->setSuggest($suggest);
+		//        $queryObj->setParam('suggest', array(
+		//            'text' => $q,
+		//            "simple_phrase" => array(
+		//                "phrase" => array(
+		//                    "field" => "subject",
+		//                    "size" => 5,
+		//                    "real_word_error_likelihood" => 0.95,
+		//                    "confidence" => 2.0,
+		//                    "max_errors" => 0.5,
+		//                    "gram_size" => 3
+		//                )
+		//            )
+		//        ));
 
-		$search->addIndex('kunena');
+		$queryObj = [
+			'index' => 'kunena',
+			'body' => [
+				'query' => $query['query'],
+				'highlight' => [
+					'pre_tags' => array('<em class="highlight">'),
+					'post_tags' => array('</em>'),
+					'require_field_match' => false,
+					'fields' => array(
+						'subject' => array(
+							'number_of_fragments' => 0,
+						),
+						'message' => array(
+							'fragment_size' => 300,
+							'number_of_fragments' => 1,
+						)
+					),
+				],
+				'suggest' => [
+					'simple_phrase' => [
+						'text' => $q,
+					
+						'term' => [
+							'field' => 'subject',
+							'size' => 5,
+						]
+					],
+				],
+				"post_filter" => $this->getFilters(),
+				'track_scores' => true,
+				'sort' => $this->getSortOrder(),
+			],
+			'from' => $from,
+			'size' => $limit,
+		];
+		
+		// $search->addIndex('kunena');
 
 		try {
 			if (ElasticsearchHelper::getDebuggable()) {
-				JLog::add('Forum Query: '.json_encode($queryObj->toArray()), JLog::INFO,'elasticsearch');
+				JLog::add('Forum Query: '.json_encode($queryObj), JLog::INFO,'elasticsearch');
 			}
 			$resultSet = $search->search($queryObj);
 		} catch (Exception $e) {
@@ -262,8 +370,8 @@ class KunenaModelElasticsearch extends KunenaModel {
 
 		// Load the messages
 		$msg_ids = array();
-		foreach($resultSet as $result) {
-			$msg_ids[] = $result->msgid;
+		foreach($resultSet['hits']['hits'] as $result) {
+			$msg_ids[] = $result['_source']['msgid'];
 		}
 		$this->messages = KunenaForumMessageHelper::getMessages($msg_ids);
 
@@ -284,15 +392,15 @@ class KunenaModelElasticsearch extends KunenaModel {
 		KunenaForumMessageHelper::loadLocation($this->messages);
 
 		$data = new JObject;
-		$data->total = $resultSet->getTotalHits();
-		$data->hits = $resultSet->getTotalHits() > ES_MAX_RESULTS ? ES_MAX_RESULTS : $resultSet->getTotalHits();
+		$data->total = $resultSet['hits']['total']['value'];
+		$data->hits = $resultSet['hits']['total']['value'] > ES_MAX_RESULTS ? ES_MAX_RESULTS : $resultSet['hits']['total']['value'];
 		$data->page = ceil(($from+1) / $limit);
 		$data->pages = intval(ceil($data->hits / $limit));
 		$data->from = $from;
 		$data->size = $limit;
 		$data->query = $q;
-		$data->count = $resultSet->count();
-		$data->time = 0.001 * $resultSet->getTotalTime();
+		$data->count = count($resultSet['hits']['hits']);
+		$data->time = 0.001 * $resultSet['took'];
 		//$data->suggestions = $this->getSuggestions($resultSet);
 		$data->results = $resultSet;
 		$data->messages = $this->messages;
@@ -350,7 +458,7 @@ class KunenaModelElasticsearch extends KunenaModel {
 	}
 
 	protected function getFilters() {
-
+		// $query_dsl = new Elastica\QueryBuilder\DSL\Filter();
 		// Categories filter
 		$allowedCategories = KunenaUserHelper::getMyself()->getAllowedCategories();
 		$categories = $this->getState('query.catids');
@@ -371,13 +479,21 @@ class KunenaModelElasticsearch extends KunenaModel {
 		// Topics filter
 		$topic = $this->getState('query.topic_id',null);
 		if ($topic) {
-			$topicFilter = new Elastica\Filter\Term();
-			$topicFilter->setTerm('thread',$topic);
+			//$topicFilter = $query_dsl->bool_term();
+			//$topicFilter->setTerm('thread',$topic);
+
+			$query_dsl['query']['bool']['filter'][] = [
+				'term' => ['thread' => $topic]
+			];
 		}
 
 		// Access Filters
-		$accessFilter = new Elastica\Filter\Terms();
-		$accessFilter->setTerms('catid', array_map('intval',$allowedCategories));
+		//$accessFilter = $query_dsl->bool_terms();
+		//$accessFilter->setTerms('catid', array_map('intval',$allowedCategories));
+
+		$query_dsl['query']['bool']['filter'][] = [
+			'terms' => ['catid' => $this->flatten($allowedCategories)],
+		];
 
 
 		// Date filters
@@ -393,40 +509,61 @@ class KunenaModelElasticsearch extends KunenaModel {
 			} else {
 				$time = 'now'.$dateQuery;
 			}
-			$dateFilter = new Elastica\Filter\Range();
-			$dateFilter->addField('created', array($prefix => $time));
+			//$dateFilter = $query_dsl->range();
+			//$dateFilter->addField('created', array($prefix => $time));
+
+			$query_dsl['query']['bool']['filter'][] = [
+				'range' => ['created' => array($prefix => $time)]
+			];
 		}
 
 		// Username filter
 		$username = strtolower($this->getState('query.searchuser'));
 		if ($username) {
-			$userFilter = new Elastica\Filter\BoolOr();
+			//$userFilter = $query_dsl->bool_or();
 			$username_terms = explode(' ', $username);
 			if (count($username_terms) > 1) {
-				$f1 = new Elastica\Filter\Terms();
-				$f2 = new Elastica\Filter\Terms();
-				$f1->setTerms('name',$username_terms);
-				$f2->setTerms('username',$username_terms);
-				$f1->setParam('execution','and');
-				$f2->setParam('execution','and');
+				//$f1 = $query_dsl->terms();
+				//$f2 = $query_dsl->terms();
+				// $f1->setTerms('name',$username_terms);
+				$query_dsl['query']['bool']['filter'][] = [
+					'terms' => ['name' => $username_terms]
+				];
+
+				//$f2->setTerms('username',$username_terms);
+				$query_dsl['query']['bool']['filter'][] = [
+					'terms' => ['username' => $username_terms]
+				];
+
+				//$f1->setParam('execution','and');
+				//$f2->setParam('execution','and');
 			} else {
-				$f1 = new Elastica\Filter\Term();
-				$f2 = new Elastica\Filter\Term();
-				$f1->setTerm('name', $username_terms[0]);
-				$f2->setTerm('username',$username_terms[0]);
+				//$f1 = $query_dsl->term();
+				//$f2 = $query_dsl->term();
+				//$f1->setTerm('name', $username_terms[0]);
+				$query_dsl['query']['bool']['filter'][] = [
+					'term' => ['name' => $username_terms[0]]
+				];
+				//$f2->setTerm('username',$username_terms[0]);
+				$query_dsl['query']['bool']['filter'][] = [
+					'term' => ['username' => $username_terms[0]]
+				];
 			}
-			$userFilter->addFilter($f1);
-			$userFilter->addFilter($f2);
+			//$userFilter->addFilter($f1);
+			//$userFilter->addFilter($f2);
 		}
 
 		// Published filter check
-		$publishedFilter = new Elastica\Filter\Term();
-		$publishedFilter->setTerm('hold',0);
+		//$publishedFilter = $query_dsl->term();
+		//$publishedFilter->setTerm('hold',0);
+		$query_dsl['query']['bool']['filter'][] = [
+			'term' => ['hold' => 0]
+		];
 
 
 
 		// Put all the filters together
-		$this->filters->addFilter($publishedFilter);
+		/* $this->filters->addFilter($publishedFilter);
 		$this->filters->addFilter($accessFilter);
 		if ($dateQuery) {
 			$this->filters->addFilter($dateFilter);
@@ -436,9 +573,8 @@ class KunenaModelElasticsearch extends KunenaModel {
 		}
 		if ($topic) {
 			$this->filters->addFilter($topicFilter);
-		}
-
-		return $this->filters;
+		} */
+		return $query_dsl['query'];
 	}
 
 
