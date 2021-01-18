@@ -1297,7 +1297,7 @@ class KunenaControllerTopic extends KunenaController {
 				$mail->setSubject($mailsubject);
 
 				// Render the email.
-				$layout = KunenaLayout::factory('Email/Report')->debug(false)
+				$layout = KunenaLayout::factory('Email/Report')->setDebug(false)
 					->set('mail', $mail)
 					->set('message', $message)
 					->set('me', $this->me)
