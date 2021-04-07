@@ -24,10 +24,10 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 	}
 
 	public function displayRows() {
-		foreach ($this->data->results as $result) {
+		foreach ($this->data->results['hits']['hits'] as $result) {
 
-			$this->message = KunenaForumMessageHelper::get($result->msgid);
-			$this->score = sprintf("%.1f", $result->getScore() * 10);
+			$this->message = KunenaForumMessageHelper::get($result['_source']['msgid']);
+			$this->score = sprintf("%.1f", $result['_score'] * 10);
 
 			$exception = $this->message->tryAuthorise('read', null, false);
 
@@ -38,7 +38,7 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 			} else {
 
 				$this->empty = false;
-				$highlights = $result->getHighlights();
+				$highlights = $result['highlight'];
 
 				$this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
 				if ($this->message->getParent()->id) {
@@ -47,7 +47,7 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 				if (isset($highlights['message'])) {
 					$this->messageHtml = implode('... ', $highlights['message']);
 				} else {
-					$this->messageHtml = ElasticSearchHelper::truncateText($result->message, 300);
+					$this->messageHtml = ElasticSearchHelper::truncateText($result['_source']['message'], 300);
 				}
 
 				$this->parent = $this->message->getParent()->id;
@@ -84,10 +84,8 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 		$this->suggestions = false;
 		if (isset($this->data->results)) {
 			$results = $this->data->results;
-			$response = $results->getResponse();
-			$datas = $response->getData();
-			if (isset($datas['suggest'][$suggestion][0]['options'])) {
-				$suggest_data = $datas['suggest'][$suggestion][0]['options'];
+			if (isset($results['suggest'][$suggestion][0]['options'])) {
+				$suggest_data = $results['suggest'][$suggestion][0]['options'];
 
 				$suggestions = array();
 				foreach ($suggest_data as $suggestion) {

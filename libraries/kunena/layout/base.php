@@ -188,7 +188,7 @@ class KunenaLayoutBase extends KunenaCompatLayoutBase
 	 *
 	 * @return  KunenaLayoutBase  Instance of $this to allow chaining.
 	 */
-	public function debug($value) {
+	public function debug($value = array()) {
 		$this->debug = (bool) $value;
 
 		return $this;
