@@ -38,14 +38,14 @@ class KunenaLayoutElasticsearchResults extends KunenaLayout
 			} else {
 
 				$this->empty = false;
-				$highlights = $result['highlight'];
+				$highlights = $result['_source'];
 
 				$this->subjectHtml = isset($highlights['subject']) ? $highlights['subject'][0] : $this->message->subject;
 				if ($this->message->getParent()->id) {
 					$this->subjectHtml = 'Re: '.$this->subjectHtml;
 				}
 				if (isset($highlights['message'])) {
-					$this->messageHtml = implode('... ', $highlights['message']);
+					$this->messageHtml = $highlights['message'];
 				} else {
 					$this->messageHtml = ElasticSearchHelper::truncateText($result['_source']['message'], 300);
 				}

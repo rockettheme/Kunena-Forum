@@ -274,11 +274,10 @@ class KunenaModelElasticsearch extends KunenaModel {
 			$query['query']['function_score']['query'] = $childQuery['query'];
 
 		} else {
-			$query = ['body' => [
+			$query = [
 				'query' => [
-					'match_all' => '',
-				],
-			],];
+					'match_all' => (object)[],
+				],];
 		}
 
 		// put it all together
